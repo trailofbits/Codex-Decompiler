@@ -12,7 +12,6 @@ import re
 from java.net import HttpURLConnection
 from java.net import URL
 from java.io import InputStreamReader
-from java.io import OutputStream
 from java.io import BufferedReader
 from java.lang import String
 from java.lang import StringBuffer
@@ -26,16 +25,65 @@ from java.awt.event import InputEvent
 from java.awt import Color
 from ghidra.framework.plugintool import ComponentProviderAdapter
 from ghidra.app.decompiler import DecompInterface
+from ghidra.util import HelpLocation
+from ghidra.framework.options import OptionType
 from docking import WindowPosition
-from docking import EditListener
 from docking.action import DockingAction
 from docking.action import KeyBindingData
 from resources import ResourceManager
 from docking.action import ToolBarData
 from docking.widgets.dialogs import MultiLineInputDialog
 
-host = "https://api.openai.com"
-apiKey = "YOUR_API_KEY"
+API_TYPES = ["openai", "azure"]
+DEFAULT_API_TYPE = "openai"
+DEFAULT_AZURE_API_BASE = "https://{{azure-resource}}.openai.azure.com"
+DEFAULT_AZURE_CODE_MODEL_NAME = "codex"
+DEFAULT_AZURE_TEXT_MODEL_NAME = "gpt35"
+DEFAULT_OPENAI_API_BASE = "https://api.openai.com"
+DEFAULT_OPENAI_CODE_MODEL_NAME = "text-davinci-003"
+DEFAULT_OPENAI_TEXT_MODEL_NAME = "text-davinci-003"
+
+OPTION_API_TYPE = "openai.api_type"
+OPTION_API_BASE = "openai.api_base"
+OPTION_API_VERSION = "openai.api_version"
+OPTION_CODE_MODEL = "openai.code_model_name"
+OPTION_TEXT_MODEL = "openai.text_model_name"
+OPTION_API_KEY = "openai.api_key"
+
+tool = state.getTool()
+options = tool.getOptions("Codex-Decompiler")
+api_key = None
+
+def init_options():
+    help_location = HelpLocation("Codex-Decompiler", "codexdecompiler")
+    options.registerOption(OPTION_API_TYPE, DEFAULT_API_TYPE, help_location, "OpenAI API Type (openai/azure)")
+    options.registerOption(OPTION_API_BASE, DEFAULT_OPENAI_API_BASE, help_location, "OpenAI Base URL")
+    options.registerOption(OPTION_API_VERSION, "", help_location, "Azure OpenAI API Version")
+    options.registerOption(OPTION_CODE_MODEL, DEFAULT_OPENAI_CODE_MODEL_NAME, help_location, "Model name for code tasks")
+    options.registerOption(OPTION_TEXT_MODEL, DEFAULT_OPENAI_TEXT_MODEL_NAME, help_location, "Model name for text tasks")
+    options.registerOption(OPTION_API_KEY, "", None, "OpenAI API Key (set it to change the environment value)")
+
+def get_tool_option(name):
+    return options.getString(name, None)
+
+def get_code_model():
+    return get_tool_option(OPTION_CODE_MODEL)
+
+def get_text_model():
+    return get_tool_option(OPTION_TEXT_MODEL)
+
+def get_api_key():
+    api_key_option = get_tool_option(OPTION_API_KEY)
+    if api_key_option:
+        return api_key_option
+
+    if os.environ.get("OPENAI_API_KEY") is not None:
+        return os.environ["OPENAI_API_KEY"]
+    else:
+        api_key_option = askString("OpenAI API Key", "OpenAI API Key")
+        options.setString(OPTION_API_KEY, api_key_option)
+        return api_key_option
+
 pluginPath = sourceFile.getAbsolutePath().replace(sourceFile.getName(), "")
 guiAdapter = None
 currentFunction = None
@@ -172,12 +220,11 @@ class CustomMultiLineInputDialog(MultiLineInputDialog):
     def okCallback(self):
         global currentQuery
         currentQuery = self.getValue()
-        path = "/v1/engines/code-davinci-002/completions"
         data = {"prompt": self.getValue(), "max_tokens": 512, "n": 1, "temperature": 0}
-        output = checkCacheOrSend(path, data)
-        if output != None:
+        output = checkCacheOrSend(get_code_model(), data)
+        if output is not None:
             global guiAdapter
-            if guiAdapter == None:
+            if guiAdapter is None:
                 guiAdapter = PluginComponentProviderAdapter(
                     state.getTool(), "OpenAI Pseudocode"
                 )
@@ -237,11 +284,10 @@ class FindVulnAction(DockingAction):
         prompt = "Find any possible vulnerabilities in the following code. Describe the cause of the bug and possible ways to trigger it in a code comment.\nCode:\n\n" + decompiledCode
         global currentQuery
         currentQuery = prompt
-        path = "/v1/engines/text-davinci-003-playground/completions"
         data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0, "stream": False}
-        output = checkCacheOrSend(path, data, decompiledCode)
-        if output != None:
-            if guiAdapter == None:
+        output = checkCacheOrSend(get_text_model(), data, decompiledCode)
+        if output is not None:
+            if guiAdapter is None:
                 guiAdapter = PluginComponentProviderAdapter(
                     state.getTool(), "OpenAI Pseudocode"
                 )
@@ -260,17 +306,16 @@ class AltDecompAction(DockingAction):
     def actionPerformed(self, actionContext):
         decompInterface = DecompInterface()
         decompInterface.openProgram(currentProgram)
-        results = decompInterface.decompileFunction(currentFunction,0,None)
+        results = decompInterface.decompileFunction(currentFunction, 0, None)
         functionCode = results.getDecompiledFunction().getC()
         prompt = "Understand this code and rewrite it in a better manner with more descriptive function/variable names, better logic, and more.\nCode:\n" + functionCode + "New Code:\n"
         global currentQuery
         currentQuery = prompt
-        path = "/v1/engines/code-davinci-002/completions"
         data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0}
-        output = checkCacheOrSend(path, data)
+        output = checkCacheOrSend(get_code_model(), data)
         global guiAdapter
-        if output != None:
-            if guiAdapter == None:
+        if output is not None:
+            if guiAdapter is None:
                 guiAdapter = PluginComponentProviderAdapter(
                     state.getTool(), "OpenAI Pseudocode"
                 )
@@ -355,7 +400,7 @@ def disassembleFunction(address, temp):
     print("Collecting data about function.")
     global currentFunction
     currentFunction = getFunctionContaining(address)
-    if currentFunction != None:
+    if currentFunction is not None:
         addr_set = currentFunction.getBody()
         insts = currentProgram.getListing().getInstructions(addr_set, True)
         arch = getArch()
@@ -369,23 +414,23 @@ def disassembleFunction(address, temp):
             inst_string = inst.toString()
             for i in range(inst.getNumOperands()):
                 addr = inst.getAddress(i)
-                if addr != None:
+                if addr is not None:
                     data = currentProgram.getListing().getDataAt(addr)
-                    if data != None:
+                    if data is not None:
                         refs += addr.toString() + " " + data.toString() + "\n"
                     symbol = symbols.getPrimarySymbol(addr)
-                    if symbol != None:
+                    if symbol is not None:
                         value = symbol.getName(True)
                         if value.find("EXTERNAL") != -1:
                             value = value.replace("<EXTERNAL>::", "")
                         inst_string = inst_string.replace("0x" + addr.toString(), value)
             label = inst.getLabel()
-            if label != None and label != currentFunction.getName():
+            if label is not None and label != currentFunction.getName():
                 final = label + ":\n" + inst_string + "\n"
             else:
                 final = inst_string + "\n"
             instructions += final
-        calling_conv = currentFunction.getDefaultCallingConventionName()
+        calling_conv = currentFunction.DEFAULT_CALLING_CONVENTION_STRING
         params = currentFunction.getParameters()
         func_header = "\n{calling_conv} {func_name}({params}):\n".format(
             calling_conv=calling_conv,
@@ -421,15 +466,15 @@ def disassembleFunction(address, temp):
 def decompileApi(functionData, temp):
     global currentQuery
     currentQuery = functionData
-    path = "/v1/engines/code-davinci-002/completions"
     data = {"prompt": functionData, "max_tokens": 512, "n": 1, "temperature": temp}
+    kwargs = {}
     if temp > 0:
-        output = checkCacheOrSend(path, data, noCache=True)
-    else:
-        output = checkCacheOrSend(path, data)
-    if output != None:
+        kwargs['noCache'] = True
+
+    output = checkCacheOrSend(get_code_model(), data, **kwargs)
+    if output is not None:
         global guiAdapter
-        if guiAdapter == None:
+        if guiAdapter is None:
             guiAdapter = PluginComponentProviderAdapter(
                 state.getTool(), "OpenAI Pseudocode"
             )
@@ -439,7 +484,6 @@ def decompileApi(functionData, temp):
 
 
 def generateContextApi(pseudocode):
-    path = "/v1/engines/code-davinci-002/completions"
     prompt = (
         "Understand the following code and generate a description for it as a comment.\n\nCode:\n"
         + pseudocode
@@ -447,10 +491,10 @@ def generateContextApi(pseudocode):
     global currentQuery
     currentQuery = prompt
     data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0}
-    output = checkCacheOrSend(path, data)
-    if output != None:
+    output = checkCacheOrSend(get_code_model(), data)
+    if output is not None:
         global guiAdapter
-        if guiAdapter == None:
+        if guiAdapter is None:
             guiAdapter = PluginComponentProviderAdapter(
                 state.getTool(), "OpenAI Pseudocode"
             )
@@ -458,7 +502,7 @@ def generateContextApi(pseudocode):
     else:
         print("Invalid output from api")
 
-def checkCacheOrSend(path, data, appendString = None, noCache = False):
+def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
     filename = re.sub(
         r"\W+",
         "",
@@ -474,10 +518,15 @@ def checkCacheOrSend(path, data, appendString = None, noCache = False):
         if data.get("prompt") in jsonData:
             print("Loading cached response.")
             return jsonData.get(data.get("prompt"))
-    if appendString != None:
-        output = sendToApi(path, data) + appendString
-    else:
-        output = sendToApi(path, data)
+
+    output = sendToApi(model_name, data)
+    # Do not cache empty results or errors so we try again next time
+    if not output:
+        return output
+
+    if appendString is not None:
+        output += appendString
+
     jsonData.update({data.get("prompt"):str(output)})    
     if noCache is False:
         f2 = open(pluginPath + "output/" + filename + ".txt", "w+")
@@ -485,15 +534,31 @@ def checkCacheOrSend(path, data, appendString = None, noCache = False):
         f2.close()
     return output
 
-def sendToApi(path, data):
+def sendToApi(model_name, data):
     print("Sending data to OpenAI api.")
+    api_type = get_tool_option("openai.api_type")
+    api_base = get_tool_option("openai.api_base")
+    api_version = get_tool_option("openai.api_version")
+    api_key = get_api_key()
+
+    if api_type == "azure":
+        path = "/openai/deployments/%s/completions?api-version=%s" % (model_name, api_version)
+        authorization_header = "Api-Key"
+        authorization_value = api_key
+    elif api_type == "openai":
+        path = "/v1/engines/%s/completions" % (model_name,)
+        authorization_header = "Authorization"
+        authorization_value = "Bearer " + api_key
+    else:
+        return None
+
     try:
-        url = URL(host + path)
+        url = URL(api_base + path)
         con = url.openConnection()
         con.setRequestMethod("POST")
         con.setRequestProperty("Content-Type", "application/json")
         con.setRequestProperty("Accept", "application/json")
-        con.setRequestProperty("Authorization", "Bearer " + apiKey)
+        con.setRequestProperty(authorization_header, authorization_value)
         con.setDoOutput(True)
         outputStream = con.getOutputStream()
         input_data = String(json.dumps(data)).getBytes("utf-8")
@@ -505,12 +570,12 @@ def sendToApi(path, data):
             inpt = BufferedReader(InputStreamReader(con.getInputStream()))
             response = StringBuffer()
             inputLine = inpt.readLine()
-            while inputLine != None:
+            while inputLine is not None:
                 response.append(inputLine)
                 inputLine = inpt.readLine()
             inpt.close()
             response_string = response.toString()
-            if response_string != None:
+            if response_string is not None:
                 response_json = json.loads(response_string)
                 output = response_json.get(unicode("choices", "utf-8"))[0].get(
                     unicode("text", "utf-8")
@@ -524,10 +589,9 @@ def sendToApi(path, data):
 
 
 def main():
-    print("Press Ctrl+J in any function to decompile it using OpenAI.")
-    if apiKey == "YOUR_API_KEY":
-        print("Change the apiKey variable in the script to your OpenAI api key.")
-        return
+    init_options()
+    print("Press Ctrl+J/Cmd+J in any function to decompile it using OpenAI.")
+    print("Modify Codex-Decompiler options through Edit > Tool Options > Codex-Decompiler.")
     if not os.path.exists(pluginPath + "output"):
         os.mkdir(pluginPath + "output")
     state.getTool().addAction(PluginDockingAction())
