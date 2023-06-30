@@ -38,8 +38,8 @@ DEFAULT_AZURE_API_BASE = "https://{{azure-resource}}.openai.azure.com"
 DEFAULT_AZURE_CODE_MODEL_NAME = "codex"
 DEFAULT_AZURE_TEXT_MODEL_NAME = "gpt35"
 DEFAULT_OPENAI_API_BASE = "https://api.openai.com"
-DEFAULT_OPENAI_CODE_MODEL_NAME = "text-davinci-003"
-DEFAULT_OPENAI_TEXT_MODEL_NAME = "text-davinci-003"
+DEFAULT_OPENAI_CODE_MODEL_NAME = "gpt-3.5-turbo"
+DEFAULT_OPENAI_TEXT_MODEL_NAME = "gpt-3.5-turbo"
 
 OPTION_API_TYPE = "openai.api_type"
 OPTION_API_BASE = "openai.api_base"
@@ -549,16 +549,26 @@ def sendToApi(model_name, data):
     api_base = get_tool_option("openai.api_base")
     api_version = get_tool_option("openai.api_version")
 
+    is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4"]
+    type_path = '/chat' if is_chat_api else ''
+
     if api_type == "azure":
-        path = "/openai/deployments/%s/completions?api-version=%s" % (model_name, api_version)
+        path = "/openai/deployments/%s%s/completions?api-version=%s" % (model_name, type_path, api_version)
         authorization_header = "Api-Key"
         authorization_value = api_key
     elif api_type == "openai":
-        path = "/v1/engines/%s/completions" % (model_name,)
+        path = "/v1%s/completions" % (type_path,)
+        data['model'] = model_name
         authorization_header = "Authorization"
         authorization_value = "Bearer " + api_key
     else:
         return None
+
+    # If this is a Chat API model, convert the prompt into a message, according
+    # to the Chat API.
+    if is_chat_api:
+        prompt = data.pop('prompt')
+        data['messages'] = [{'role': 'user', 'content': prompt}]
 
     try:
         url = URL(api_base + path)
@@ -587,9 +597,11 @@ def sendToApi(model_name, data):
             response_string = response.toString()
             if response_string is not None:
                 response_json = json.loads(response_string)
-                output = response_json.get(unicode("choices", "utf-8"))[0].get(
-                    unicode("text", "utf-8")
-                )
+                choice = response_json["choices"][0]
+                if is_chat_api:
+                    output = choice["message"]['content']
+                else:
+                    output = choice["text"]
                 return output
         else:
             print("Error in accessing api: " + con.getResponseMessage())
