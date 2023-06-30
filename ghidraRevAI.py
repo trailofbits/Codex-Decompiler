@@ -503,12 +503,13 @@ def generateContextApi(pseudocode):
         print("Invalid output from api")
 
 def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
+    api_type = get_tool_option("openai.api_type")
     filename = re.sub(
         r"\W+",
         "",
-        os.path.basename(currentProgram.getExecutablePath())
+        os.path.basename(currentProgram.getExecutablePath()) + "-"
         + currentFunction.getName(),
-    )
+    ) + "-" + api_type + "-" + model_name
     jsonData = {}
     if os.path.isfile(pluginPath + "output/" + filename + ".txt") and noCache is False:
         f = open(pluginPath + "output/" + filename + ".txt", "r")
@@ -527,7 +528,7 @@ def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
     if appendString is not None:
         output += appendString
 
-    jsonData.update({data.get("prompt"):str(output)})    
+    jsonData.update({data.get("prompt"): str(output)})
     if noCache is False:
         f2 = open(pluginPath + "output/" + filename + ".txt", "w+")
         json.dump(jsonData, f2)
