@@ -600,7 +600,7 @@ def sendToApi(model_name, data):
             print("Error in accessing api: " + con.getResponseMessage())
             return None
     except java.lang.Exception as err:
-        print("Error in sending request: " + e.toString())
+        print("Error in sending request: " + err.toString())
 
 
 def main():
