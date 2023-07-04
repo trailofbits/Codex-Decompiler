@@ -25,6 +25,8 @@ from java.awt.event import InputEvent
 from java.awt import Color
 from ghidra.framework.plugintool import ComponentProviderAdapter
 from ghidra.app.decompiler import DecompInterface
+from ghidra.util import HelpLocation
+from ghidra.framework.options import OptionType
 from docking import WindowPosition
 from docking.action import DockingAction
 from docking.action import KeyBindingData
@@ -46,9 +48,20 @@ OPTION_API_BASE = "openai.api_base"
 OPTION_API_VERSION = "openai.api_version"
 OPTION_CODE_MODEL = "openai.code_model_name"
 OPTION_TEXT_MODEL = "openai.text_model_name"
+OPTION_API_KEY = "openai.api_key"
 
 tool = state.getTool()
 options = tool.getOptions("Codex-Decompiler")
+api_key = None
+
+def init_options():
+    help_location = HelpLocation("Codex-Decompiler", "codexdecompiler")
+    options.registerOption(OPTION_API_TYPE, DEFAULT_API_TYPE, help_location, "OpenAI API Type (openai/azure)")
+    options.registerOption(OPTION_API_BASE, DEFAULT_OPENAI_API_BASE, help_location, "OpenAI Base URL")
+    options.registerOption(OPTION_API_VERSION, "", help_location, "Azure OpenAI API Version")
+    options.registerOption(OPTION_CODE_MODEL, DEFAULT_OPENAI_CODE_MODEL_NAME, help_location, "Model name for code tasks")
+    options.registerOption(OPTION_TEXT_MODEL, DEFAULT_OPENAI_TEXT_MODEL_NAME, help_location, "Model name for text tasks")
+    options.registerOption(OPTION_API_KEY, "", None, "OpenAI API Key (set it to change the environment value)")
 
 def get_tool_option(name):
     return options.getString(name, None)
@@ -59,39 +72,17 @@ def get_code_model():
 def get_text_model():
     return get_tool_option(OPTION_TEXT_MODEL)
 
-api_type = get_tool_option(OPTION_API_TYPE)
-if api_type is None:
-    api_type = askChoice("OpenAI API Type", "OpenAI API Type", API_TYPES, DEFAULT_API_TYPE)
-    if api_type is not None :
-        options.setString(OPTION_API_TYPE, api_type)
+def get_api_key():
+    api_key_option = get_tool_option(OPTION_API_KEY)
+    if api_key_option:
+        return api_key_option
 
-api_base = get_tool_option(OPTION_API_BASE)
-if api_base is None:
-    default_api_base = DEFAULT_AZURE_API_BASE if api_type == "azure" else DEFAULT_OPENAI_API_BASE
-    api_base = askString("OpenAI API Base address", "Address", default_api_base)
-    if api_base is not None :
-        options.setString(OPTION_API_BASE, api_base)
-
-api_version = get_tool_option(OPTION_API_VERSION)
-if api_version is None and api_type == "azure":
-    api_version = askString("OpenAI API Version", "API Version")
-    if api_version is not None :
-        options.setString(OPTION_API_VERSION, api_version)
-
-code_model_name = get_code_model()
-if code_model_name is None:
-    code_model_name = DEFAULT_AZURE_CODE_MODEL_NAME if api_type == "azure" else DEFAULT_OPENAI_CODE_MODEL_NAME
-    options.setString(OPTION_CODE_MODEL, code_model_name)
-
-text_model_name = get_text_model()
-if text_model_name is None:
-    text_model_name = DEFAULT_AZURE_TEXT_MODEL_NAME if api_type == "azure" else DEFAULT_OPENAI_TEXT_MODEL_NAME
-    options.setString(OPTION_TEXT_MODEL, text_model_name)
-
-if os.environ.get("OPENAI_API_KEY") is not None:
-    api_key = os.environ["OPENAI_API_KEY"]
-else:
-    api_key = askString("OpenAI API Key", "OpenAI API Key")
+    if os.environ.get("OPENAI_API_KEY") is not None:
+        return os.environ["OPENAI_API_KEY"]
+    else:
+        api_key_option = askString("OpenAI API Key", "OpenAI API Key")
+        options.setString(OPTION_API_KEY, api_key_option)
+        return api_key_option
 
 pluginPath = sourceFile.getAbsolutePath().replace(sourceFile.getName(), "")
 guiAdapter = None
@@ -549,6 +540,7 @@ def sendToApi(model_name, data):
     api_type = get_tool_option("openai.api_type")
     api_base = get_tool_option("openai.api_base")
     api_version = get_tool_option("openai.api_version")
+    api_key = get_api_key()
 
     is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4"]
     type_path = '/chat' if is_chat_api else ''
@@ -612,7 +604,9 @@ def sendToApi(model_name, data):
 
 
 def main():
+    init_options()
     print("Press Ctrl+J/Cmd+J in any function to decompile it using OpenAI.")
+    print("Modify Codex-Decompiler options through Edit > Tool Options > Codex-Decompiler.")
     if not os.path.exists(pluginPath + "output"):
         os.mkdir(pluginPath + "output")
     state.getTool().addAction(PluginDockingAction())
