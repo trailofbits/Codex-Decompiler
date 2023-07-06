@@ -25,6 +25,8 @@ from java.awt.event import InputEvent
 from java.awt import Color
 from ghidra.framework.plugintool import ComponentProviderAdapter
 from ghidra.app.decompiler import DecompInterface
+from ghidra.util import HelpLocation
+from ghidra.framework.options import OptionType
 from docking import WindowPosition
 from docking.action import DockingAction
 from docking.action import KeyBindingData
@@ -38,14 +40,17 @@ DEFAULT_AZURE_API_BASE = "https://{{azure-resource}}.openai.azure.com"
 DEFAULT_AZURE_CODE_MODEL_NAME = "codex"
 DEFAULT_AZURE_TEXT_MODEL_NAME = "gpt35"
 DEFAULT_OPENAI_API_BASE = "https://api.openai.com"
+
 DEFAULT_OPENAI_CODE_MODEL_NAME = "gpt-3.5-turbo"
 DEFAULT_OPENAI_TEXT_MODEL_NAME = "gpt-3.5-turbo"
+
 
 OPTION_API_TYPE = "openai.api_type"
 OPTION_API_BASE = "openai.api_base"
 OPTION_API_VERSION = "openai.api_version"
 OPTION_CODE_MODEL = "openai.code_model_name"
 OPTION_TEXT_MODEL = "openai.text_model_name"
+
 
 tool = state.getTool()
 options = tool.getOptions("Codex-Decompiler")
@@ -60,6 +65,7 @@ def get_text_model():
     return get_tool_option(OPTION_TEXT_MODEL)
 
 api_type = get_tool_option(OPTION_API_TYPE)
+
 if api_type is None:
     api_type = askChoice("OpenAI API Type", "OpenAI API Type", API_TYPES, DEFAULT_API_TYPE)
     if api_type is not None :
@@ -92,6 +98,7 @@ if os.environ.get("OPENAI_API_KEY") is not None:
     api_key = os.environ["OPENAI_API_KEY"]
 else:
     api_key = askString("OpenAI API Key", "OpenAI API Key")
+
 
 pluginPath = sourceFile.getAbsolutePath().replace(sourceFile.getName(), "")
 guiAdapter = None
@@ -513,6 +520,7 @@ def generateContextApi(pseudocode):
 
 def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
     api_type = get_tool_option("openai.api_type")
+
     filename = re.sub(
         r"\W+",
         "",
@@ -537,7 +545,9 @@ def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
     if appendString is not None:
         output += appendString
 
+
     jsonData.update({data.get("prompt"): str(output)})
+
     if noCache is False:
         f2 = open(pluginPath + "output/" + filename + ".txt", "w+")
         json.dump(jsonData, f2)
@@ -560,6 +570,7 @@ def sendToApi(model_name, data):
     elif api_type == "openai":
         path = "/v1%s/completions" % (type_path,)
         data['model'] = model_name
+
         authorization_header = "Authorization"
         authorization_value = "Bearer " + api_key
     else:
@@ -575,6 +586,7 @@ def sendToApi(model_name, data):
         url = URL(api_base + path)
         print(api_base + path)
         print(data)
+
         con = url.openConnection()
         con.setRequestMethod("POST")
         con.setRequestProperty("Content-Type", "application/json")
@@ -608,11 +620,12 @@ def sendToApi(model_name, data):
             print("Error in accessing api: " + con.getResponseMessage())
             return None
     except java.lang.Exception as err:
-        print("Error in sending request: " + e.toString())
+        print("Error in sending request: " + err.toString())
 
 
 def main():
     print("Press Ctrl+J/Cmd+J in any function to decompile it using OpenAI.")
+
     if not os.path.exists(pluginPath + "output"):
         os.mkdir(pluginPath + "output")
     state.getTool().addAction(PluginDockingAction())
