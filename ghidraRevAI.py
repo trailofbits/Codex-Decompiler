@@ -628,6 +628,9 @@ def checkCacheOrSend(model_name, data, appendString=None, noCache=False):
     if not output:
         return output
 
+    if '</OUTPUT>' in output:
+        output = output[:output.index('</OUTPUT>')]
+
     if appendString is not None:
         output += appendString
 
