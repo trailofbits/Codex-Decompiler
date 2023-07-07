@@ -54,23 +54,52 @@ tool = state.getTool()
 options = tool.getOptions("Codex-Decompiler")
 api_key = None
 
+
 def init_options():
     help_location = HelpLocation("Codex-Decompiler", "codexdecompiler")
-    options.registerOption(OPTION_API_TYPE, DEFAULT_API_TYPE, help_location, "OpenAI API Type (openai/azure)")
-    options.registerOption(OPTION_API_BASE, DEFAULT_OPENAI_API_BASE, help_location, "OpenAI Base URL")
-    options.registerOption(OPTION_API_VERSION, "", help_location, "Azure OpenAI API Version")
-    options.registerOption(OPTION_CODE_MODEL, DEFAULT_OPENAI_CODE_MODEL_NAME, help_location, "Model name for code tasks")
-    options.registerOption(OPTION_TEXT_MODEL, DEFAULT_OPENAI_TEXT_MODEL_NAME, help_location, "Model name for text tasks")
-    options.registerOption(OPTION_API_KEY, "", None, "OpenAI API Key (set it to change the environment value)")
+    options.registerOption(
+        OPTION_API_TYPE,
+        DEFAULT_API_TYPE,
+        help_location,
+        "OpenAI API Type (openai/azure)",
+    )
+    options.registerOption(
+        OPTION_API_BASE, DEFAULT_OPENAI_API_BASE, help_location, "OpenAI Base URL"
+    )
+    options.registerOption(
+        OPTION_API_VERSION, "", help_location, "Azure OpenAI API Version"
+    )
+    options.registerOption(
+        OPTION_CODE_MODEL,
+        DEFAULT_OPENAI_CODE_MODEL_NAME,
+        help_location,
+        "Model name for code tasks",
+    )
+    options.registerOption(
+        OPTION_TEXT_MODEL,
+        DEFAULT_OPENAI_TEXT_MODEL_NAME,
+        help_location,
+        "Model name for text tasks",
+    )
+    options.registerOption(
+        OPTION_API_KEY,
+        "",
+        None,
+        "OpenAI API Key (set it to change the environment value)",
+    )
+
 
 def get_tool_option(name):
     return options.getString(name, None)
 
+
 def get_code_model():
     return get_tool_option(OPTION_CODE_MODEL)
 
+
 def get_text_model():
     return get_tool_option(OPTION_TEXT_MODEL)
+
 
 def get_api_key():
     api_key_option = get_tool_option(OPTION_API_KEY)
@@ -84,11 +113,54 @@ def get_api_key():
         options.setString(OPTION_API_KEY, api_key_option)
         return api_key_option
 
+
 pluginPath = sourceFile.getAbsolutePath().replace(sourceFile.getName(), "")
 guiAdapter = None
 currentFunction = None
 currentAddress = None
 currentQuery = None
+
+DECOMPILE_PROMPT = """Provide the %s code that generated the provided %s-%s disassembly. Do not create or make up new functions. The code describes a single function. %s
+
+1st example:
+<INPUT>
+x86 64-bit Assembly from Ghidra:
+
+default FUN_00401363():
+...
+//end of function FUN_00401363
+
+Reference Table:
+Address Data
+00402008 ds ...
+00402011 ds ...
+</INPUT>
+<OUTPUT>
+void FUN_00401363(void) {
+	...
+}
+</OUTPUT>
+
+2nd example:
+<INPUT>
+x86 64-bit Assembly from Ghidra:
+
+default example_function():
+...
+</INPUT>
+<OUTPUT>
+int example_function() {
+...
+}
+</OUTPUT>
+
+Here's the real example:
+<INPUT>
+%s
+</INPUT>
+<OUTPUT>
+"""
+
 
 class PluginComponentProviderAdapter(ComponentProviderAdapter):
     def __init__(self, tool, name):
@@ -105,7 +177,9 @@ class PluginComponentProviderAdapter(ComponentProviderAdapter):
         self.scrollPane.setRowHeaderView(self.lineTextArea)
         self.setDefaultWindowPosition(WindowPosition.RIGHT)
         self.setTitle("OpenAI Pseudocode")
-        self.textArea.getDocument().addDocumentListener(ScrollDocumentListener(self.lineTextArea))
+        self.textArea.getDocument().addDocumentListener(
+            ScrollDocumentListener(self.lineTextArea)
+        )
         self.setVisible(True)
         self.createActions()
 
@@ -125,7 +199,7 @@ class PluginComponentProviderAdapter(ComponentProviderAdapter):
         refreshAction = RefreshAction(self.getName())
         findVulnAction = FindVulnAction(self.getName())
         altDecompAction = AltDecompAction(self.getName())
-        
+
         self.addLocalAction(generateContextAction)
         self.addLocalAction(editQueryAction)
         self.addLocalAction(saveAction)
@@ -133,16 +207,17 @@ class PluginComponentProviderAdapter(ComponentProviderAdapter):
         self.addLocalAction(findVulnAction)
         self.addLocalAction(altDecompAction)
 
+
 class LineNumberedTextArea(JTextArea):
     def __init__(self, textArea):
         self.textArea = textArea
         self.setBackground(Color.LIGHT_GRAY)
         self.setEditable(False)
-    
+
     def updateLineNumbers(self):
         lineNumbersText = self.getLineNumbersText()
         self.setText(lineNumbersText)
-    
+
     def getLineNumbersText(self):
         caretPosition = self.textArea.getDocument().getLength()
         root = self.textArea.getDocument().getDefaultRootElement()
@@ -154,20 +229,22 @@ class LineNumberedTextArea(JTextArea):
 
         return lineNumbersTextBuilder.toString()
 
+
 class ScrollDocumentListener(DocumentListener):
     def __init__(self, lineTextArea):
         DocumentListener.__init__(self)
         self.lineTextArea = lineTextArea
-        
+
     def insertUpdate(self, documentEvent):
         self.lineTextArea.updateLineNumbers()
-        
+
     def removeUpdate(self, documentEvent):
         self.lineTextArea.updateLineNumbers()
-        
+
     def changedUpdate(self, documentEvent):
         self.lineTextArea.updateLineNumbers()
-        
+
+
 class PluginDockingAction(DockingAction):
     def __init__(self):
         DockingAction.__init__(
@@ -213,6 +290,7 @@ class EditQueryDockingAction(DockingAction):
             self.component,
         )
 
+
 class CustomMultiLineInputDialog(MultiLineInputDialog):
     def __init__(self, name, message, text, icon):
         MultiLineInputDialog.__init__(self, name, message, text, icon)
@@ -234,6 +312,7 @@ class CustomMultiLineInputDialog(MultiLineInputDialog):
         self.close()
         self.dispose()
 
+
 class SaveAction(DockingAction):
     def __init__(self, owner):
         DockingAction.__init__(self, "Save Edits", owner, False)
@@ -241,24 +320,25 @@ class SaveAction(DockingAction):
         self.setEnabled(True)
         icon = ResourceManager.loadImage("images/disk.png")
         self.setToolBarData(ToolBarData(icon))
-    
+
     def actionPerformed(self, actionContext):
         global guiAdapter
         global currentQuery
         filename = re.sub(
-        r"\W+",
-        "",
-        os.path.basename(currentProgram.getExecutablePath())
-        + currentFunction.getName(),
+            r"\W+",
+            "",
+            os.path.basename(currentProgram.getExecutablePath())
+            + currentFunction.getName(),
         )
         f = open(pluginPath + "output/" + filename + ".txt", "r")
         jsonData = json.load(f)
         f.close()
-        jsonData.update({currentQuery:str(guiAdapter.getText())})
+        jsonData.update({currentQuery: str(guiAdapter.getText())})
         f2 = open(pluginPath + "output/" + filename + ".txt", "w")
         json.dump(jsonData, f2)
         f2.close()
-        
+
+
 class RefreshAction(DockingAction):
     def __init__(self, owner):
         DockingAction.__init__(self, "Re-generate Pseudocode", owner, False)
@@ -266,10 +346,11 @@ class RefreshAction(DockingAction):
         self.setEnabled(True)
         icon = ResourceManager.loadImage("images/reload3.png")
         self.setToolBarData(ToolBarData(icon))
-    
+
     def actionPerformed(self, actionContext):
         disassembleFunction(currentAddress, 0.25)
-        
+
+
 class FindVulnAction(DockingAction):
     def __init__(self, owner):
         DockingAction.__init__(self, "Find vulns", owner, False)
@@ -277,14 +358,23 @@ class FindVulnAction(DockingAction):
         self.setEnabled(True)
         icon = ResourceManager.loadImage("images/video-x-generic16.png")
         self.setToolBarData(ToolBarData(icon))
-        
+
     def actionPerformed(self, actionContext):
         global guiAdapter
         decompiledCode = guiAdapter.getText()
-        prompt = "Find any possible vulnerabilities in the following code. Describe the cause of the bug and possible ways to trigger it in a code comment.\nCode:\n\n" + decompiledCode
+        prompt = (
+            "Find any possible vulnerabilities in the following code. Describe the cause of the bug and possible ways to trigger it in a code comment.\nCode:\n\n"
+            + decompiledCode
+        )
         global currentQuery
         currentQuery = prompt
-        data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0, "stream": False}
+        data = {
+            "prompt": prompt,
+            "max_tokens": 512,
+            "n": 1,
+            "temperature": 0,
+            "stream": False,
+        }
         output = checkCacheOrSend(get_text_model(), data, decompiledCode)
         if output is not None:
             if guiAdapter is None:
@@ -294,7 +384,8 @@ class FindVulnAction(DockingAction):
             guiAdapter.update(str(output))
         else:
             print("Invalid output from api")
-            
+
+
 class AltDecompAction(DockingAction):
     def __init__(self, owner):
         DockingAction.__init__(self, "Decompile using Ghidra's decomp", owner, False)
@@ -302,13 +393,17 @@ class AltDecompAction(DockingAction):
         self.setEnabled(True)
         icon = ResourceManager.loadImage("images/exec.png")
         self.setToolBarData(ToolBarData(icon))
-        
+
     def actionPerformed(self, actionContext):
         decompInterface = DecompInterface()
         decompInterface.openProgram(currentProgram)
         results = decompInterface.decompileFunction(currentFunction, 0, None)
         functionCode = results.getDecompiledFunction().getC()
-        prompt = "Understand this code and rewrite it in a better manner with more descriptive function/variable names, better logic, and more.\nCode:\n" + functionCode + "New Code:\n"
+        prompt = (
+            "Understand this code and rewrite it in a better manner with more descriptive function/variable names, better logic, and more.\nCode:\n"
+            + functionCode
+            + "New Code:\n"
+        )
         global currentQuery
         currentQuery = prompt
         data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0}
@@ -322,7 +417,8 @@ class AltDecompAction(DockingAction):
             guiAdapter.update(str(output))
         else:
             print("Invalid output from api")
-            
+
+
 class LanguageTemplate:
     def __init__(self, inputString):
         if inputString == "swift":
@@ -333,7 +429,7 @@ class LanguageTemplate:
             self.template = "The C++ code is idiomatic and uses standard libraries and range based loops.\n"
         elif inputString == "rust":
             self.name = "Rust"
-            self.template = "The RUST code is idiomatic and uses macros, channels, and functions or data types from standard libraries.\n"
+            self.template = "The Rust code is idiomatic and uses macros, channels, and functions or data types from standard libraries.\n"
         elif inputString == "go":
             self.name = "Go"
             self.template = (
@@ -341,7 +437,7 @@ class LanguageTemplate:
             )
         else:
             self.name = "C"
-            self.template = "The C code is idiomatic and uses functions, types, and structures from standard libraries.\n"
+            self.template = "The C code is idiomatic and uses functions, types, enums, defines, and structures from standard libraries.\n"
 
     def getName(self):
         return self.name
@@ -365,7 +461,7 @@ def getSize():
 def getLanguage():
     symbolIterator = currentProgram.getSymbolTable().getAllSymbols(True)
     symbols = []
-    
+
     for symbol in symbolIterator:
         symbols.append(symbol.getName(True))
 
@@ -374,7 +470,7 @@ def getLanguage():
 
     if have_swift and have_arclite:
         return LanguageTemplate("swift")
-        
+
     have_rustc = string_in_list("rust", symbols)
     have_corec = string_in_list("_ZN4core", symbols)
 
@@ -392,7 +488,7 @@ def getLanguage():
 
     if have_cxa and have_std:
         return LanguageTemplate("cpp")
-        
+
     return LanguageTemplate("c")
 
 
@@ -449,16 +545,15 @@ def disassembleFunction(address, temp):
             + currentFunction.getName()
             + "\n\n"
             + refs
-            + "\nGenerate the "
-            + language.getName()
-            + " code that produced the above "
-            + arch
-            + " "
-            + size
-            + "-bit assembly."
-            + language.getTemplate()
         )
-        decompileApi(full_func, temp)
+        prompt = DECOMPILE_PROMPT % (
+            language.getName(),
+            arch,
+            size,
+            language.getTemplate(),
+            full_func,
+        )
+        decompileApi(prompt, temp)
     else:
         print("Select a different location.")
 
@@ -466,10 +561,10 @@ def disassembleFunction(address, temp):
 def decompileApi(functionData, temp):
     global currentQuery
     currentQuery = functionData
-    data = {"prompt": functionData, "max_tokens": 512, "n": 1, "temperature": temp}
+    data = {"prompt": functionData, "max_tokens": 3000, "n": 1, "temperature": temp}
     kwargs = {}
     if temp > 0:
-        kwargs['noCache'] = True
+        kwargs["noCache"] = True
 
     output = checkCacheOrSend(get_code_model(), data, **kwargs)
     if output is not None:
@@ -502,14 +597,22 @@ def generateContextApi(pseudocode):
     else:
         print("Invalid output from api")
 
-def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
+
+def checkCacheOrSend(model_name, data, appendString=None, noCache=False):
     api_type = get_tool_option("openai.api_type")
-    filename = re.sub(
-        r"\W+",
-        "",
-        os.path.basename(currentProgram.getExecutablePath()) + "-"
-        + currentFunction.getName(),
-    ) + "-" + api_type + "-" + model_name
+    filename = (
+        re.sub(
+            r"\W+",
+            "",
+            os.path.basename(currentProgram.getExecutablePath())
+            + "-"
+            + currentFunction.getName(),
+        )
+        + "-"
+        + api_type
+        + "-"
+        + model_name
+    )
     jsonData = {}
     if os.path.isfile(pluginPath + "output/" + filename + ".txt") and noCache is False:
         f = open(pluginPath + "output/" + filename + ".txt", "r")
@@ -535,6 +638,7 @@ def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
         f2.close()
     return output
 
+
 def sendToApi(model_name, data):
     print("Sending data to OpenAI api.")
     api_type = get_tool_option("openai.api_type")
@@ -542,16 +646,20 @@ def sendToApi(model_name, data):
     api_version = get_tool_option("openai.api_version")
     api_key = get_api_key()
 
-    is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4"]
-    type_path = '/chat' if is_chat_api else ''
+    is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4", "gpt4"]
+    type_path = "/chat" if is_chat_api else ""
 
     if api_type == "azure":
-        path = "/openai/deployments/%s%s/completions?api-version=%s" % (model_name, type_path, api_version)
+        path = "/openai/deployments/%s%s/completions?api-version=%s" % (
+            model_name,
+            type_path,
+            api_version,
+        )
         authorization_header = "Api-Key"
         authorization_value = api_key
     elif api_type == "openai":
         path = "/v1%s/completions" % (type_path,)
-        data['model'] = model_name
+        data["model"] = model_name
         authorization_header = "Authorization"
         authorization_value = "Bearer " + api_key
     else:
@@ -560,11 +668,14 @@ def sendToApi(model_name, data):
     # If this is a Chat API model, convert the prompt into a message, according
     # to the Chat API.
     if is_chat_api:
-        prompt = data.pop('prompt')
-        data['messages'] = [{'role': 'user', 'content': prompt}]
+        prompt = data.pop("prompt")
+        data["messages"] = [{"role": "user", "content": prompt}]
 
     try:
         url = URL(api_base + path)
+        print(prompt if is_chat_api else data["prompt"])
+        print()
+        print(data)
         con = url.openConnection()
         con.setRequestMethod("POST")
         con.setRequestProperty("Content-Type", "application/json")
@@ -590,7 +701,7 @@ def sendToApi(model_name, data):
                 response_json = json.loads(response_string)
                 choice = response_json["choices"][0]
                 if is_chat_api:
-                    output = choice["message"]['content']
+                    output = choice["message"]["content"]
                 else:
                     output = choice["text"]
                 return output
@@ -604,7 +715,9 @@ def sendToApi(model_name, data):
 def main():
     init_options()
     print("Press Ctrl+J/Cmd+J in any function to decompile it using OpenAI.")
-    print("Modify Codex-Decompiler options through Edit > Tool Options > Codex-Decompiler.")
+    print(
+        "Modify Codex-Decompiler options through Edit > Tool Options > Codex-Decompiler."
+    )
     if not os.path.exists(pluginPath + "output"):
         os.mkdir(pluginPath + "output")
     state.getTool().addAction(PluginDockingAction())
