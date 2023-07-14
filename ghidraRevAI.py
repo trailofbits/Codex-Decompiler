@@ -51,6 +51,8 @@ OPTION_API_VERSION = "openai.api_version"
 OPTION_CODE_MODEL = "openai.code_model_name"
 OPTION_TEXT_MODEL = "openai.text_model_name"
 
+SYSTEM_PROMPT = """You are a translator from assembly to high level languages like Rust, Go, and C++. Your translations are idiomatic and use correct library functions. If you need more data to translate, you explain what is required."""
+
 
 tool = state.getTool()
 options = tool.getOptions("Codex-Decompiler")
@@ -236,7 +238,7 @@ class CustomMultiLineInputDialog(MultiLineInputDialog):
     def okCallback(self):
         global currentQuery
         currentQuery = self.getValue()
-        data = {"prompt": self.getValue(), "max_tokens": 512, "n": 1, "temperature": 0}
+        data = {"prompt": self.getValue(), "max_tokens": 2048, "n": 1, "temperature": 0}
         output = checkCacheOrSend(get_code_model(), data)
         if output is not None:
             global guiAdapter
@@ -327,7 +329,7 @@ class AltDecompAction(DockingAction):
         prompt = "Understand this code and rewrite it in a better manner with more descriptive function/variable names, better logic, and more.\nCode:\n" + functionCode + "New Code:\n"
         global currentQuery
         currentQuery = prompt
-        data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0}
+        data = {"prompt": prompt, "max_tokens": 2048, "n": 1, "temperature": 0}
         output = checkCacheOrSend(get_code_model(), data)
         global guiAdapter
         if output is not None:
@@ -482,7 +484,7 @@ def disassembleFunction(address, temp):
 def decompileApi(functionData, temp):
     global currentQuery
     currentQuery = functionData
-    data = {"prompt": functionData, "max_tokens": 512, "n": 1, "temperature": temp}
+    data = {"prompt": functionData, "max_tokens": 2048, "n": 1, "temperature": temp}
     kwargs = {}
     if temp > 0:
         kwargs['noCache'] = True
@@ -506,7 +508,7 @@ def generateContextApi(pseudocode):
     )
     global currentQuery
     currentQuery = prompt
-    data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0}
+    data = {"prompt": prompt, "max_tokens": 2048, "n": 1, "temperature": 0}
     output = checkCacheOrSend(get_code_model(), data)
     if output is not None:
         global guiAdapter
@@ -559,10 +561,10 @@ def sendToApi(model_name, data):
     api_base = get_tool_option("openai.api_base")
     api_version = get_tool_option("openai.api_version")
 
-    is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4"]
+    is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4", "gpt4"]
     type_path = '/chat' if is_chat_api else ''
 
-    is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4"]
+    is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4", "gpt4"]
     type_path = '/chat' if is_chat_api else ''
 
     if api_type == "azure":
@@ -581,7 +583,7 @@ def sendToApi(model_name, data):
     # to the Chat API.
     if is_chat_api:
         prompt = data.pop('prompt')
-        data['messages'] = [{'role': 'user', 'content': prompt}]
+        data['messages'] = [{'role': 'user', 'content': prompt}, {'role': 'system', 'content': SYSTEM_PROMPT}]
 
     try:
         url = URL(api_base + path)
