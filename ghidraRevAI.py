@@ -520,7 +520,6 @@ def generateContextApi(pseudocode):
 
 def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
     api_type = get_tool_option("openai.api_type")
-
     filename = re.sub(
         r"\W+",
         "",
@@ -563,6 +562,9 @@ def sendToApi(model_name, data):
     is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4"]
     type_path = '/chat' if is_chat_api else ''
 
+    is_chat_api = model_name in ["gpt35", "gpt-3.5-turbo", "gpt-4"]
+    type_path = '/chat' if is_chat_api else ''
+
     if api_type == "azure":
         path = "/openai/deployments/%s%s/completions?api-version=%s" % (model_name, type_path, api_version)
         authorization_header = "Api-Key"
@@ -570,7 +572,6 @@ def sendToApi(model_name, data):
     elif api_type == "openai":
         path = "/v1%s/completions" % (type_path,)
         data['model'] = model_name
-
         authorization_header = "Authorization"
         authorization_value = "Bearer " + api_key
     else:
