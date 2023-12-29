@@ -1,0 +1,153 @@
+x86 64-bit Assembly:
+
+default funcD(undefined param_1, undefined param_2, undefined param_3, undefined param_4, undefined param_5, undefined param_6, undefined8 param_7, undefined8 param_8):
+MOV RCX,qword ptr FS:[-0x8]
+LEA RAX,[RSP + -0x10]
+CMP RAX,qword ptr [RCX + 0x10]
+JBE LAB_00492bc5
+SUB RSP,0x90
+MOV qword ptr [RSP + 0x88],RBP
+LEA RBP,[RSP + 0x88]
+MOV RAX,qword ptr [RSP + 0xa0]
+TEST RAX,RAX
+JLE LAB_00492bb0
+MOV RCX,qword ptr [RSP + 0x98]
+XOR EDX,EDX
+MOV EBX,0xfeedbeef
+JMP LAB_00492a50
+LAB_004929e1:
+MOVSXD R9,R9D
+ADD RBX,R9
+LAB_004929e7:
+CMP R8,RSI
+JGE LAB_00492a44
+MOVZX R9D,byte ptr [RDI + R8*0x1]
+CMP R9D,0x80
+JGE LAB_004929ff
+INC R8
+JMP LAB_004929e1
+LAB_004929ff:
+MOV qword ptr [RSP + 0x48],RBX
+MOV qword ptr [RSP],RDI
+MOV qword ptr [RSP + 0x8],RSI
+MOV qword ptr [RSP + 0x10],R8
+CALL runtime.decoderune
+MOV R9D,dword ptr [RSP + 0x18]
+MOV R8,qword ptr [RSP + 0x20]
+MOV RAX,qword ptr [RSP + 0xa0]
+MOV RCX,qword ptr [RSP + 0x60]
+MOV RDX,qword ptr [RSP + 0x50]
+MOV RBX,qword ptr [RSP + 0x48]
+MOV RSI,qword ptr [RSP + 0x40]
+MOV RDI,qword ptr [RSP + 0x58]
+JMP LAB_004929e1
+LAB_00492a44:
+INC RDX
+CMP RDX,RAX
+JGE LAB_00492a73
+ADD RCX,0x10
+LAB_00492a50:
+MOV qword ptr [RSP + 0x60],RCX
+MOV qword ptr [RSP + 0x50],RDX
+MOV RSI,qword ptr [RCX + 0x8]
+MOV qword ptr [RSP + 0x40],RSI
+MOV RDI,qword ptr [RCX]
+MOV qword ptr [RSP + 0x58],RDI
+XOR R8D,R8D
+JMP LAB_004929e7
+LAB_00492a73:
+MOV qword ptr [RSP + 0x50],RBX
+MOV RAX,qword ptr [math/rand.globalRand]
+MOV qword ptr [RSP],RAX
+MOV qword ptr [RSP + 0x8],RBX
+CALL math/rand.(*Rand).Seed
+CALL math/rand.Int
+MOV RAX,qword ptr [RSP]
+MOV RCX,qword ptr [RSP + 0x50]
+ADD RAX,RCX
+MOV RCX,qword ptr [DAT_00565df8]
+TEST RCX,RCX
+JZ LAB_00492bbf
+CQO
+IDIV RCX
+MOV qword ptr [RSP + 0x48],RDX
+XORPS XMM0,XMM0
+MOVUPS xmmword ptr [RSP + 0x78],XMM0
+LEA RCX,[0x4a57a0]
+MOV qword ptr [RSP + 0x78],RCX
+LEA RBX,[0x4e2190]
+MOV qword ptr [RSP + 0x80],RBX
+MOV RBX,qword ptr [os.Stdout]
+LEA RSI,[0x4e3840]
+MOV qword ptr [RSP],RSI
+MOV qword ptr [RSP + 0x8],RBX
+LEA RBX,[RSP + 0x78]
+MOV qword ptr [RSP + 0x10],RBX
+MOV qword ptr [RSP + 0x18],0x1
+MOV qword ptr [RSP + 0x20],0x1
+CALL fmt.Fprintln
+MOV RCX,qword ptr [DAT_00565df8]
+MOV RDX,qword ptr [funcDions]
+MOV RAX,qword ptr [RSP + 0x48]
+CMP RAX,RCX
+JNC LAB_00492bba
+SHL RAX,0x4
+MOV RCX,qword ptr [RDX + RAX*0x1 + 0x8]
+MOV RAX,qword ptr [RDX + RAX*0x1]
+MOV qword ptr [RSP],RAX
+MOV qword ptr [RSP + 0x8],RCX
+CALL runtime.convTstring
+MOV RAX,qword ptr [RSP + 0x10]
+XORPS XMM0,XMM0
+MOVUPS xmmword ptr [RSP + 0x68],XMM0
+LEA RCX,[0x4a57a0]
+MOV qword ptr [RSP + 0x68],RCX
+MOV qword ptr [RSP + 0x70],RAX
+MOV RAX,qword ptr [os.Stdout]
+LEA RCX,[0x4e3840]
+MOV qword ptr [RSP],RCX
+MOV qword ptr [RSP + 0x8],RAX
+LEA RAX,[RSP + 0x68]
+MOV qword ptr [RSP + 0x10],RAX
+MOV qword ptr [RSP + 0x18],0x1
+MOV qword ptr [RSP + 0x20],0x1
+CALL fmt.Fprintln
+MOV RBP,qword ptr [RSP + 0x88]
+ADD RSP,0x90
+RET
+LAB_00492bb0:
+MOV EBX,0xfeedbeef
+JMP LAB_00492a73
+LAB_00492bba:
+CALL runtime.panicIndex
+LAB_00492bbf:
+CALL runtime.panicdivide
+NOP
+LAB_00492bc5:
+CALL runtime.morestack_noctxt
+JMP funcD
+//end of function funcD
+
+Reference Table:
+Address Data
+0056c6c0 undefined8 ??
+00565df8 ?? 0Dh
+004a57a0 ?? 10h
+004a57a0 ?? 10h
+004e2190 addr 004cac41
+004e2190 addr 004cac41
+0056c6d8 undefined8 ??
+004e3840 undefined1[32] 
+004e3840 undefined1[32] 
+00565df8 ?? 0Dh
+00569b80 addr 004c92f3
+00565df0 addr 00569b80
+00569b88 ?? 02h
+00569b80 addr 004c92f3
+004a57a0 ?? 10h
+004a57a0 ?? 10h
+0056c6d8 undefined8 ??
+004e3840 undefined1[32] 
+004e3840 undefined1[32] 
+
+Generate just the Go code for the function that produced the above x86 64-bit assembly. The Go code should only represent the funcD function. The Go code is idiomatic and uses standard libraries and channels.

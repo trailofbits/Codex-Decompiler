@@ -1,0 +1,173 @@
+x86 64-bit Assembly:
+
+default funcB():
+SUB RSP,0x188
+MOV qword ptr [RSP + 0x50],RDX
+MOV qword ptr [RSP + 0x58],RSI
+MOV qword ptr [RSP + 0x60],RDI
+MOV qword ptr [RSP + 0x68],RDI
+MOV byte ptr [RSP + 0x177],0x0
+LEA RDI,[RSP + 0x70]
+CALL alloc::vec::Vec<T>::new
+LAB_0010cecd:
+LEA RDI,[RSP + 0x88]
+CALL std::collections::hash::map::HashMap<K,V>::new
+JMP LAB_0010cf01
+LAB_0010cf01:
+MOV RSI,qword ptr [RSP + 0x50]
+MOV RDI,qword ptr [RSP + 0x58]
+MOV byte ptr [RSP + 0x177],0x1
+LAB_0010cf13:
+CALL core::slice::<impl[T]>::iter
+MOV qword ptr [RSP + 0x40],RDX
+MOV qword ptr [RSP + 0x48],RAX
+JMP LAB_0010cf4a
+LAB_0010cf4a:
+MOV RDX,qword ptr [RSP + 0x40]
+MOV RSI,qword ptr [RSP + 0x48]
+LEA RDI,[RSP + 0xd0]
+CALL core::iter::traits::iterator::Iterator::enumerate
+JMP LAB_0010cf63
+LAB_0010cf63:
+LEA RDI,[RSP + 0xb8]
+LEA RSI,[RSP + 0xd0]
+CALL <I_as_core::iter::traits::collect::IntoIterator>::into_iter
+JMP LAB_0010cf7a
+LAB_0010cf7a:
+MOV RAX,qword ptr [RSP + 0xb8]
+MOV qword ptr [RSP + 0xe8],RAX
+MOV RAX,qword ptr [RSP + 0xc0]
+MOV qword ptr [RSP + 0xf0],RAX
+MOV RAX,qword ptr [RSP + 0xc8]
+MOV qword ptr [RSP + 0xf8],RAX
+LAB_0010cfaa:
+LEA RDI,[RSP + 0xe8]
+CALL <core::iter::adapters::enumerate::Enumerate<I>as_core::iter::traits::iterator::Iterator>::next
+MOV qword ptr [RSP + 0x30],RDX
+MOV qword ptr [RSP + 0x38],RAX
+JMP LAB_0010cfc3
+LAB_0010cfc3:
+MOV RAX,qword ptr [RSP + 0x30]
+MOV RCX,qword ptr [RSP + 0x38]
+MOV qword ptr [RSP + 0x100],RCX
+MOV qword ptr [RSP + 0x108],RAX
+MOV RDX,qword ptr [RSP + 0x108]
+MOV EAX,0x1
+XOR ECX,ECX
+CMP RDX,0x0
+CMOVZ RAX,RCX
+CMP RAX,0x0
+JNZ LAB_0010d00e
+LEA RDI,[RSP + 0x70]
+CALL alloc::vec::Vec<T,A>::len
+MOV qword ptr [RSP + 0x28],RAX
+JMP LAB_0010d0b6
+LAB_0010d00e:
+MOV RAX,qword ptr [RSP + 0x100]
+MOV qword ptr [RSP + 0x18],RAX
+MOV RAX,qword ptr [RSP + 0x108]
+MOV qword ptr [RSP + 0x20],RAX
+CMP byte ptr [RAX],0x5b
+JNZ LAB_0010d03e
+MOV RSI,qword ptr [RSP + 0x18]
+LEA RDI,[RSP + 0x70]
+CALL alloc::vec::Vec<T,A>::push
+JMP LAB_0010d04d
+LAB_0010d03e:
+MOV RAX,qword ptr [RSP + 0x20]
+CMP byte ptr [RAX],0x5d
+JZ LAB_0010d04f
+JMP LAB_0010cfaa
+LAB_0010d04d:
+JMP LAB_0010d03e
+LAB_0010d04f:
+LEA RDI,[RSP + 0x70]
+CALL alloc::vec::Vec<T,A>::pop
+MOV qword ptr [RSP + 0x8],RDX
+MOV qword ptr [RSP + 0x10],RAX
+JMP LAB_0010d065
+LAB_0010d065:
+MOV RSI,qword ptr [RSP + 0x8]
+MOV RDI,qword ptr [RSP + 0x10]
+LEA RDX,[0x15ec90]
+CALL core::option::Option<T>::unwrap
+MOV qword ptr [RSP],RAX
+JMP LAB_0010d081
+LAB_0010d081:
+MOV RDX,qword ptr [RSP]
+MOV RSI,qword ptr [RSP + 0x18]
+LEA RDI,[RSP + 0x88]
+CALL std::collections::hash::map::HashMap<K,V,S>::insert
+JMP LAB_0010d099
+LAB_0010d099:
+MOV RDX,qword ptr [RSP + 0x18]
+MOV RSI,qword ptr [RSP]
+LEA RDI,[RSP + 0x88]
+CALL std::collections::hash::map::HashMap<K,V,S>::insert
+JMP LAB_0010d0b1
+LAB_0010d0b1:
+JMP LAB_0010cfaa
+LAB_0010d0b6:
+MOV RAX,qword ptr [RSP + 0x28]
+CMP RAX,0x0
+SETZ AL
+XOR AL,0xff
+TEST AL,0x1
+JNZ LAB_0010d10f
+MOV byte ptr [RSP + 0x177],0x0
+MOVUPS XMM0,xmmword ptr [RSP + 0x88]
+MOVUPS XMM1,xmmword ptr [RSP + 0x98]
+MOVUPS XMM2,xmmword ptr [RSP + 0xa8]
+MOVAPS xmmword ptr [RSP + 0x130],XMM2
+MOVAPS xmmword ptr [RSP + 0x120],XMM1
+MOVAPS xmmword ptr [RSP + 0x110],XMM0
+LAB_0010d100:
+LEA RDI,[RSP + 0x140]
+CALL alloc::vec::Vec<T>::new
+JMP LAB_0010d157
+LAB_0010d10f:
+LEA RDI,[0x14b2a5]
+LEA RDX,[0x15eca8]
+LEA RAX,[0x108b10]
+MOV ESI,0x1e
+CALL RAX
+JMP LAB_0010d12d
+LAB_0010d12d:
+UD2
+LAB_0010d157:
+LEA RDI,[RSP + 0x158]
+CALL alloc::vec::Vec<T>::new
+JMP LAB_0010d18b
+LAB_0010d18b:
+MOV RDI,qword ptr [RSP + 0x60]
+LEA RSI,[RSP + 0x110]
+MOV EDX,0x30
+CALL memcpy
+MOV RAX,qword ptr [RSP + 0x60]
+MOV RCX,qword ptr [RSP + 0x140]
+MOV qword ptr [RAX + 0x30],RCX
+MOV RCX,qword ptr [RSP + 0x148]
+MOV qword ptr [RAX + 0x38],RCX
+MOV RCX,qword ptr [RSP + 0x150]
+MOV qword ptr [RAX + 0x40],RCX
+MOV RCX,qword ptr [RSP + 0x158]
+MOV qword ptr [RAX + 0x48],RCX
+MOV RCX,qword ptr [RSP + 0x160]
+MOV qword ptr [RAX + 0x50],RCX
+MOV RCX,qword ptr [RSP + 0x168]
+MOV qword ptr [RAX + 0x58],RCX
+MOV byte ptr [RAX + 0x60],0x0
+MOV byte ptr [RSP + 0x177],0x0
+LEA RDI,[RSP + 0x70]
+CALL core::ptr::drop_in_place<alloc::vec::Vec<usize>>
+MOV RAX,qword ptr [RSP + 0x68]
+ADD RSP,0x188
+RET
+//end of function funcB
+
+Reference Table:
+Address Data
+0015ec90 addr 0014b29c
+0015eca8 addr 0014b29c
+
+Generate just the Rust code for the function that produced the above x86 64-bit assembly. The Rust code should only represent the funcB function. The Rust code is idiomatic and uses macros, channels, and functions or data types from standard libraries.

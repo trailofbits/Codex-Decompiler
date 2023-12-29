@@ -1,0 +1,154 @@
+x86 64-bit Assembly:
+
+default funcA():
+SUB RSP,0x198
+MOV qword ptr [RSP + 0x48],RSI
+MOV RAX,RDI
+MOV RDI,qword ptr [RSP + 0x48]
+MOV qword ptr [RSP + 0x50],RAX
+MOV qword ptr [RSP + 0x58],RAX
+MOV byte ptr [RSP + 0x187],0x0
+LAB_0010b816:
+CALL <alloc::string::String_as_core::ops::deref::Deref>::deref
+MOV qword ptr [RSP + 0x60],RDX
+MOV qword ptr [RSP + 0x68],RAX
+JMP LAB_0010b84c
+LAB_0010b84c:
+MOV RSI,qword ptr [RSP + 0x60]
+MOV RDI,qword ptr [RSP + 0x68]
+CALL core::str::<impl_str>::chars
+MOV qword ptr [RSP + 0x38],RDX
+MOV qword ptr [RSP + 0x40],RAX
+JMP LAB_0010b867
+LAB_0010b867:
+MOV RDX,qword ptr [RSP + 0x38]
+MOV RSI,qword ptr [RSP + 0x40]
+LEA RDI,[RSP + 0x70]
+CALL core::iter::traits::iterator::Iterator::collect
+JMP LAB_0010b87d
+LAB_0010b87d:
+MOV byte ptr [RSP + 0x187],0x1
+LAB_0010b885:
+LEA RDI,[RSP + 0x70]
+CALL alloc::vec::Vec<T,A>::pop
+MOV dword ptr [RSP + 0x34],EAX
+JMP LAB_0010b8bb
+LAB_0010b8bb:
+MOV EAX,dword ptr [RSP + 0x34]
+MOV dword ptr [RSP + 0x88],EAX
+MOV EAX,0x1
+XOR ECX,ECX
+CMP dword ptr [RSP + 0x88],0x110000
+CMOVZ RAX,RCX
+CMP RAX,0x0
+JNZ LAB_0010b8fc
+MOV RDI,qword ptr [RSP + 0x50]
+LEA RSI,[0x1450e1]
+XOR EAX,EAX
+MOV EDX,EAX
+CALL str>::to_owned
+JMP LAB_0010bb0b
+LAB_0010b8fc:
+MOV EAX,dword ptr [RSP + 0x88]
+MOV dword ptr [RSP + 0x8c],EAX
+LEA RDI,[RSP + 0x8c]
+CALL core::fmt::ArgumentV1::new_display
+MOV qword ptr [RSP + 0x20],RDX
+MOV qword ptr [RSP + 0x28],RAX
+JMP LAB_0010b923
+LAB_0010b923:
+MOV RAX,qword ptr [RSP + 0x20]
+MOV RCX,qword ptr [RSP + 0x28]
+MOV qword ptr [RSP + 0x10],RCX
+MOV qword ptr [RSP + 0x18],RAX
+MOV byte ptr [RSP + 0x187],0x0
+MOV RAX,qword ptr [RSP + 0x80]
+MOV qword ptr [RSP + 0x170],RAX
+MOVUPS XMM0,xmmword ptr [RSP + 0x70]
+MOVAPS xmmword ptr [RSP + 0x160],XMM0
+LEA RDI,[RSP + 0x140]
+LEA RSI,[RSP + 0x160]
+CALL <alloc::vec::Vec<T,A>as_core::iter::traits::collect::IntoIterator>::into_iter
+JMP LAB_0010b973
+LAB_0010b973:
+LEA RDI,[RSP + 0x128]
+LEA RSI,[RSP + 0x140]
+CALL core::iter::traits::iterator::Iterator::collect
+JMP LAB_0010b98a
+LAB_0010b98a:
+LEA RDI,[RSP + 0x110]
+LEA RSI,[RSP + 0x128]
+CALL source::funcA
+JMP LAB_0010b9a1
+LAB_0010b9a1:
+LEA RDI,[RSP + 0x110]
+CALL core::fmt::ArgumentV1::new_display
+MOV qword ptr [RSP],RDX
+MOV qword ptr [RSP + 0x8],RAX
+JMP LAB_0010b9e1
+LAB_0010b9e1:
+MOV RAX,qword ptr [RSP]
+MOV RCX,qword ptr [RSP + 0x8]
+MOV RDX,qword ptr [RSP + 0x18]
+MOV RSI,qword ptr [RSP + 0x10]
+MOV qword ptr [RSP + 0xf0],RSI
+MOV qword ptr [RSP + 0xf8],RDX
+MOV qword ptr [RSP + 0x100],RCX
+MOV qword ptr [RSP + 0x108],RAX
+LAB_0010ba14:
+LEA RSI,[0x156f18]
+LEA RDI,[RSP + 0xc0]
+LEA RCX,[RSP + 0xf0]
+MOV R8D,0x2
+MOV RDX,R8
+CALL core::fmt::Arguments::new_v1
+JMP LAB_0010ba3b
+LAB_0010ba3b:
+LEA RDI,[RSP + 0xa8]
+LEA RSI,[RSP + 0xc0]
+CALL alloc::fmt::format
+JMP LAB_0010ba52
+LAB_0010ba52:
+LEA RDI,[RSP + 0x110]
+CALL core::ptr::drop_in_place<alloc::string::String>
+LAB_0010ba5f:
+JMP LAB_0010ba94
+LAB_0010ba94:
+MOV RDI,qword ptr [RSP + 0x50]
+MOV RAX,qword ptr [RSP + 0xb8]
+MOV qword ptr [RSP + 0xa0],RAX
+MOVUPS XMM0,xmmword ptr [RSP + 0xa8]
+MOVAPS xmmword ptr [RSP + 0x90],XMM0
+LAB_0010bab9:
+LEA RSI,[RSP + 0x90]
+CALL <alloc::string::String_as_alloc::string::ToString>::to_string
+JMP LAB_0010baf0
+LAB_0010baf0:
+LEA RDI,[RSP + 0x90]
+CALL core::ptr::drop_in_place<alloc::string::String>
+JMP LAB_0010baff
+LAB_0010baff:
+TEST byte ptr [RSP + 0x187],0x1
+JNZ LAB_0010bb3b
+JMP LAB_0010bb1c
+LAB_0010bb0b:
+JMP LAB_0010baff
+LAB_0010bb1c:
+MOV RDI,qword ptr [RSP + 0x48]
+MOV byte ptr [RSP + 0x187],0x0
+CALL core::ptr::drop_in_place<alloc::string::String>
+MOV RAX,qword ptr [RSP + 0x58]
+ADD RSP,0x198
+RET
+LAB_0010bb3b:
+LEA RDI,[RSP + 0x70]
+CALL core::ptr::drop_in_place<alloc::vec::Vec<char>>
+LAB_0010bb45:
+JMP LAB_0010bb1c
+//end of function funcA
+
+Reference Table:
+Address Data
+00156f18 addr 001450e1
+
+Generate just the Rust code for the function that produced the above x86 64-bit assembly. The Rust code should only represent the funcA function. The Rust code is idiomatic and uses macros, channels, and functions or data types from standard libraries.

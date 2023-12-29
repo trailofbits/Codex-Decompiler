@@ -1,0 +1,90 @@
+x86 64-bit Assembly:
+
+default funcD(string charset, int length):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0x90
+MOV qword ptr [RBP + -0x78],RDI
+MOV dword ptr [RBP + -0x4],ESI
+LAB_00402782:
+MOV ESI,0x40a380
+LEA RDI,[RBP + -0x18]
+MOV qword ptr [RBP + -0x80],RDI
+CALL std::unique_lock<std::mutex>::unique_lock
+MOV RSI,qword ptr [RBP + -0x80]
+LAB_00402798:
+MOV EDI,0x40a320
+CALL std::condition_variable::wait<(lambda_at_source.cpp:43:29)>
+JMP LAB_004027a7
+LAB_004027a7:
+MOV EDI,0x40a3c0
+MOV ESI,0x406072
+CALL std::operator!=<char,_std::char_traits<char>,_std::allocator<char>_>
+MOV CL,AL
+MOV byte ptr [RBP + -0x81],CL
+JMP LAB_004027c3
+LAB_004027c3:
+MOV AL,byte ptr [RBP + -0x81]
+TEST AL,0x1
+JNZ LAB_004027d6
+JMP LAB_004027f3
+LAB_004027d6:
+MOV dword ptr [RBP + -0x30],0x1
+JMP LAB_00402863
+LAB_004027f3:
+MOV RSI,qword ptr [RBP + -0x78]
+LEA RDI,[RBP + -0x70]
+CALL std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string
+JMP LAB_00402805
+LAB_00402805:
+MOV EDX,dword ptr [RBP + -0x4]
+LAB_00402808:
+LEA RDI,[RBP + -0x50]
+LEA RSI,[RBP + -0x70]
+CALL gen_random
+JMP LAB_0040281a
+LAB_0040281a:
+MOV EDI,0x40a3a8
+LEA RSI,[RBP + -0x50]
+CALL std::vector<std::basic_string<char,_std::char_traits<char>,_std::allocator<char>_>,_std::allocator<std::basic_string<char,_std::char_traits<char>,_std::allocator<char>_>_>_>::push_back
+JMP LAB_0040282d
+LAB_0040282d:
+LEA RDI,[RBP + -0x50]
+CALL std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>::~basic_string
+LEA RDI,[RBP + -0x70]
+CALL std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>::~basic_string
+LAB_0040283f:
+LEA RDI,[RBP + -0x18]
+CALL std::unique_lock<std::mutex>::unlock
+LAB_00402848:
+JMP LAB_0040284d
+LAB_0040284d:
+MOV RDI,0x40a350
+CALL std::condition_variable::notify_one
+MOV dword ptr [RBP + -0x30],0x0
+LAB_00402863:
+LEA RDI,[RBP + -0x18]
+CALL std::unique_lock<std::mutex>::~unique_lock
+MOV EAX,dword ptr [RBP + -0x30]
+TEST EAX,EAX
+JZ LAB_00402881
+JMP LAB_0040287c
+LAB_0040287c:
+JMP LAB_004028c3
+LAB_00402881:
+JMP LAB_00402782
+LAB_004028c3:
+ADD RSP,0x90
+POP RBP
+RET
+//end of function funcD
+
+Reference Table:
+Address Data
+0040a380 mutex 
+0040a320 condition_variable 
+0040a3c0 undefined1[32] 
+0040a3a8 vector<std::basic_string<char,_std::char_traits<char>,_std::allocator<char>_>,_std::allocator<std::basic_string<char,_std::char_traits<char>,_std::allocator<char>_>_>_> 
+0040a350 condition_variable 
+
+Generate just the C++ code for the function that produced the above x86 64-bit assembly. The C++ code should only represent the funcD function. The C++ code is idiomatic and uses standard libraries and range based loops.

@@ -1,0 +1,76 @@
+x86 64-bit Assembly:
+
+default funcD(int ARGC, char * * ARGV):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0x20
+MOV dword ptr [RBP + -0x4],0x0
+MOV dword ptr [RBP + -0x8],EDI
+MOV qword ptr [RBP + -0x10],RSI
+CMP dword ptr [RBP + -0x8],0x2
+JZ LAB_00401363
+MOV RDI,qword ptr [stderr]
+MOV RSI,0x402008
+MOV AL,0x0
+CALL fprintf
+MOV EDI,0x6
+CALL raise
+LAB_00401363:
+MOV qword ptr [COUNTER],0x0
+MOV RAX,qword ptr [RBP + -0x10]
+MOV RDI,qword ptr [RAX + 0x8]
+CALL atoi
+CDQE
+MOV qword ptr [CURRENT],RAX
+CMP qword ptr [CURRENT],0x1
+JGE LAB_004013b8
+MOV RDI,qword ptr [stderr]
+MOV RSI,0x40200f
+MOV AL,0x0
+CALL fprintf
+MOV EDI,0x6
+CALL raise
+LAB_004013b8:
+MOV EDI,0xa
+MOV RSI,0x4012d0
+CALL signal
+MOV EDI,0xc
+MOV RSI,0x401270
+CALL signal
+MOV EDI,0x15
+MOV RSI,0x4011c0
+CALL signal
+MOV EDI,0x16
+MOV RSI,0x401220
+CALL signal
+CALL getpid
+MOV dword ptr [RBP + -0x14],EAX
+MOV RDI,0x4040c0
+MOV ESI,0x1
+CALL __sigsetjmp
+MOV dword ptr [RBP + -0x18],EAX
+CMP dword ptr [RBP + -0x18],0x0
+JNZ LAB_00401438
+MOV dword ptr [RBP + -0x18],0x15
+LAB_00401438:
+MOV EDI,dword ptr [RBP + -0x14]
+MOV ESI,dword ptr [RBP + -0x18]
+CALL kill
+MOV EAX,dword ptr [RBP + -0x4]
+ADD RSP,0x20
+POP RBP
+RET
+//end of function funcD
+
+Reference Table:
+Address Data
+004040a0 undefined8 0000000000000000h
+00402008 ds "Nein!\n"
+004040b8 long 0h
+004040b0 long 0h
+004040b0 long 0h
+004040a0 undefined8 0000000000000000h
+0040200f ds "Nein...\n"
+004040c0 sigjmp_buf 
+
+Generate just the C code for the function that produced the above x86 64-bit assembly. The C code should only represent the funcD function. The C code is idiomatic and uses functions, types, and structures from standard libraries.

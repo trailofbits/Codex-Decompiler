@@ -1,0 +1,534 @@
+x86 64-bit Assembly:
+
+default funcE():
+MOV RCX,qword ptr FS:[-0x8]
+LEA RAX,[RSP + -0x1d8]
+CMP RAX,qword ptr [RCX + 0x10]
+JBE LAB_004aa5e4
+SUB RSP,0x258
+MOV qword ptr [RSP + 0x250],RBP
+LEA RBP,[RSP + 0x250]
+MOV RCX,qword ptr [DAT_0059a168]
+MOV RDI,qword ptr [os.Args]
+TEST RCX,RCX
+JBE LAB_004aa5dc
+MOV qword ptr [RDI + 0x8],0x8
+CMP dword ptr [runtime.writeBarrier],0x0
+JNZ LAB_004aa5a8
+LEA RAX,[0x4e664d]
+MOV qword ptr [RDI],RAX
+LAB_004a9d48:
+NOP
+MOV RAX,qword ptr [flag.CommandLine]
+MOV qword ptr [RSP],RAX
+LEA RAX,[0x4e5d60]
+MOV qword ptr [RSP + 0x8],RAX
+MOV qword ptr [RSP + 0x10],0x1
+LEA RAX,[0x4e8800]
+MOV qword ptr [RSP + 0x18],RAX
+MOV qword ptr [RSP + 0x20],0x15
+LEA RAX,[0x4e6bae]
+MOV qword ptr [RSP + 0x28],RAX
+MOV qword ptr [RSP + 0x30],0xa
+CALL flag.(*FlagSet).String
+MOV RAX,qword ptr [RSP + 0x38]
+MOV qword ptr [RSP + 0x108],RAX
+CALL time.Now
+MOV RAX,qword ptr [RSP]
+MOV RCX,qword ptr [RSP + 0x8]
+BT RAX,0x3f
+JNC LAB_004aa59a
+MOV RCX,RAX
+SHL RAX,0x1
+SHR RAX,0x1f
+MOV RDX,0xdd7b17f80
+ADD RAX,RDX
+LAB_004a9dd5:
+MOV RDX,qword ptr [flag.CommandLine]
+MOV qword ptr [RSP],RDX
+LEA RDX,[0x4e5d5f]
+MOV qword ptr [RSP + 0x8],RDX
+MOV qword ptr [RSP + 0x10],0x1
+IMUL RAX,RAX,0x3b9aca00
+AND RCX,0x3fffffff
+MOVSXD RCX,ECX
+ADD RAX,RCX
+MOV RCX,-0x5e4dfc14c2e60000
+ADD RAX,RCX
+MOV qword ptr [RSP + 0x18],RAX
+LEA RAX,[0x4e6e0a]
+MOV qword ptr [RSP + 0x20],RAX
+MOV qword ptr [RSP + 0x28],0xb
+CALL flag.(*FlagSet).Int64
+NOP
+MOV RAX,qword ptr [RSP + 0x30]
+MOV RCX,qword ptr [os.Args]
+MOV RDX,qword ptr [DAT_0059a170]
+MOV RBX,qword ptr [DAT_0059a168]
+CMP RBX,0x1
+JC LAB_004aa5cf
+MOV qword ptr [RSP + 0x100],RAX
+MOV RAX,qword ptr [flag.CommandLine]
+MOV qword ptr [RSP],RAX
+LEA RAX,[RDX + -0x1]
+MOV RDX,RAX
+NEG RAX
+SAR RAX,0x3f
+AND RAX,0x10
+ADD RAX,RCX
+MOV qword ptr [RSP + 0x8],RAX
+LEA RAX,[RBX + -0x1]
+MOV qword ptr [RSP + 0x10],RAX
+MOV qword ptr [RSP + 0x18],RDX
+CALL flag.(*FlagSet).Parse
+MOV RAX,qword ptr [RSP + 0x100]
+MOV RAX,qword ptr [RAX]
+MOV RCX,qword ptr [math/rand.globalRand]
+MOV qword ptr [RSP],RCX
+MOV qword ptr [RSP + 0x8],RAX
+CALL math/rand.(*Rand).Seed
+MOV RAX,qword ptr [os.Stdin]
+MOV qword ptr [RSP + 0x118],RAX
+NOP
+MOV qword ptr [RSP + 0x1f8],0x0
+LEA RDI,[RSP + 0x200]
+XORPS XMM0,XMM0
+LEA RDI,[RDI + -0x30]
+MOV qword ptr [RSP + -0x10],RBP
+LEA RBP,[RSP + -0x10]
+CALL FUN_00454fe5
+MOV RBP,qword ptr [RBP]
+LEA RCX,[0x4be080]
+MOV qword ptr [RSP],RCX
+MOV qword ptr [RSP + 0x8],0x1000
+MOV qword ptr [RSP + 0x10],0x1000
+CALL runtime.makeslice
+MOV RAX,qword ptr [RSP + 0x18]
+MOV qword ptr [RSP + 0x1a0],0x0
+LEA RDI,[RSP + 0x1a8]
+XORPS XMM0,XMM0
+LEA RDI,[RDI + -0x30]
+MOV qword ptr [RSP + -0x10],RBP
+LEA RBP,[RSP + -0x10]
+CALL FUN_00454fe5
+MOV RBP,qword ptr [RBP]
+MOV qword ptr [RSP + 0x1a0],RAX
+MOV qword ptr [RSP + 0x1a8],0x1000
+MOV qword ptr [RSP + 0x1b0],0x1000
+LEA RAX,[0x502b20]
+MOV qword ptr [RSP + 0x1b8],RAX
+MOV RAX,qword ptr [RSP + 0x118]
+MOV qword ptr [RSP + 0x1c0],RAX
+MOV qword ptr [RSP + 0x1e8],-0x1
+MOV qword ptr [RSP + 0x1f0],-0x1
+MOV RAX,qword ptr [RSP + 0x1a0]
+MOV qword ptr [RSP + 0x1f8],RAX
+LEA RDI,[RSP + 0x200]
+LEA RSI,[RSP + 0x1a8]
+MOV qword ptr [RSP + -0x10],RBP
+LEA RBP,[RSP + -0x10]
+CALL FUN_0045534a
+MOV RBP,qword ptr [RBP]
+MOV RAX,qword ptr [RSP + 0x108]
+MOV RCX,qword ptr [RAX + 0x8]
+MOV RAX,qword ptr [RAX]
+MOV qword ptr [RSP],RAX
+MOV qword ptr [RSP + 0x8],RCX
+CALL main.selec
+MOV RAX,qword ptr [RSP + 0x10]
+MOV RCX,qword ptr [RSP + 0x18]
+LEA RDX,[RSP + 0x98]
+MOV qword ptr [RSP],RDX
+MOV qword ptr [RSP + 0x8],RAX
+MOV qword ptr [RSP + 0x10],RCX
+CALL runtime.stringtoslicebyte
+MOV RAX,qword ptr [RSP + 0x20]
+MOV qword ptr [RSP + 0x50],RAX
+MOV RCX,qword ptr [RSP + 0x18]
+MOV qword ptr [RSP + 0xf8],RCX
+LEA RDX,[0x4e5d5b]
+MOV qword ptr [RSP],RDX
+MOV qword ptr [RSP + 0x8],0x1
+MOV qword ptr [RSP + 0x10],RAX
+CALL strings.Repeat
+MOV RAX,qword ptr [RSP + 0x18]
+MOV RCX,qword ptr [RSP + 0x20]
+LEA RDX,[RSP + 0x78]
+MOV qword ptr [RSP],RDX
+MOV qword ptr [RSP + 0x8],RAX
+MOV qword ptr [RSP + 0x10],RCX
+CALL runtime.stringtoslicebyte
+MOV RAX,qword ptr [RSP + 0x18]
+MOV qword ptr [RSP + 0x110],RAX
+MOV RCX,qword ptr [RSP + 0x20]
+MOV qword ptr [RSP + 0x60],RCX
+XORPS XMM0,XMM0
+MOVUPS xmmword ptr [RSP + 0x170],XMM0
+MOVUPS xmmword ptr [RSP + 0x180],XMM0
+MOVUPS xmmword ptr [RSP + 0x190],XMM0
+MOVUPS xmmword ptr [RSP + 0xd8],XMM0
+MOVUPS xmmword ptr [RSP + 0xe8],XMM0
+LEA RDX,[RSP + 0xd8]
+MOV qword ptr [RSP + 0x180],RDX
+CALL runtime.fastrand
+MOV EAX,dword ptr [RSP]
+MOV dword ptr [RSP + 0x17c],EAX
+XOR EAX,EAX
+MOV RCX,qword ptr [RSP + 0x50]
+LAB_004aa0d8:
+MOV qword ptr [RSP + 0x58],RCX
+MOV qword ptr [RSP + 0x68],RAX
+MOV qword ptr [RSP],0x0
+LEA RDX,[0x4e5d42]
+MOV qword ptr [RSP + 0x8],RDX
+MOV qword ptr [RSP + 0x10],0x1
+MOV RBX,qword ptr [RSP + 0x110]
+MOV qword ptr [RSP + 0x18],RBX
+MOV RSI,qword ptr [RSP + 0x60]
+MOV qword ptr [RSP + 0x20],RSI
+LEA RDI,[0x4e5de8]
+MOV qword ptr [RSP + 0x28],RDI
+MOV qword ptr [RSP + 0x30],0x3
+CALL runtime.concatstring3
+MOV RAX,qword ptr [RSP + 0x40]
+MOV RCX,qword ptr [RSP + 0x38]
+MOV qword ptr [RSP],RCX
+MOV qword ptr [RSP + 0x8],RAX
+CALL runtime.convTstring
+MOV RAX,qword ptr [RSP + 0x10]
+XORPS XMM0,XMM0
+MOVUPS xmmword ptr [RSP + 0x160],XMM0
+LEA RCX,[0x4bdf40]
+MOV qword ptr [RSP + 0x160],RCX
+MOV qword ptr [RSP + 0x168],RAX
+MOV RAX,qword ptr [os.Stdout]
+LEA RDX,[0x502b40]
+MOV qword ptr [RSP],RDX
+MOV qword ptr [RSP + 0x8],RAX
+LEA RAX,[RSP + 0x160]
+MOV qword ptr [RSP + 0x10],RAX
+MOV qword ptr [RSP + 0x18],0x1
+MOV qword ptr [RSP + 0x20],0x1
+CALL fmt.Fprint
+NOP
+LEA RAX,[RSP + 0x1f8]
+MOV qword ptr [RSP],RAX
+MOV byte ptr [RSP + 0x8],0xa
+CALL bufio.(*Reader).ReadBytes
+MOV RAX,qword ptr [RSP + 0x20]
+MOV RCX,qword ptr [RSP + 0x18]
+MOV RDX,qword ptr [RSP + 0x10]
+MOV RBX,qword ptr [RSP + 0x28]
+MOV qword ptr [RSP + 0x70],RBX
+CMP RBX,0x0
+LEA RSI,[RSP + 0xb8]
+MOV qword ptr [RSP],RSI
+MOV qword ptr [RSP + 0x8],RDX
+MOV qword ptr [RSP + 0x10],RCX
+MOV qword ptr [RSP + 0x18],RAX
+CALL runtime.slicebytetostring
+MOV RAX,qword ptr [RSP + 0x20]
+MOV RCX,qword ptr [RSP + 0x28]
+CMP RCX,0x2
+MOV RDX,qword ptr [RSP + 0x70]
+CMP RDX,0x0
+JNZ LAB_004aa58a
+CMP RCX,0x2
+JGE LAB_004aa230
+MOV RAX,qword ptr [RSP + 0x68]
+MOV RCX,qword ptr [RSP + 0x58]
+JMP LAB_004aa0d8
+LAB_004aa230:
+MOVZX EAX,byte ptr [RAX]
+MOV byte ptr [RSP + 0x4e],AL
+MOV byte ptr [RSP + 0x4f],AL
+LEA RCX,[0x4c52c0]
+MOV qword ptr [RSP],RCX
+LEA RDX,[RSP + 0x170]
+MOV qword ptr [RSP + 0x8],RDX
+LEA RBX,[RSP + 0x4f]
+MOV qword ptr [RSP + 0x10],RBX
+CALL runtime.mapaccess1
+MOV RAX,qword ptr [RSP + 0x18]
+CMP byte ptr [RAX],0x0
+JZ LAB_004aa2df
+XORPS XMM0,XMM0
+MOVUPS xmmword ptr [RSP + 0x150],XMM0
+LEA RAX,[0x4bdf40]
+MOV qword ptr [RSP + 0x150],RAX
+LEA RCX,[0x5011c0]
+MOV qword ptr [RSP + 0x158],RCX
+MOV RDX,qword ptr [os.Stdout]
+LEA RBX,[0x502b40]
+MOV qword ptr [RSP],RBX
+MOV qword ptr [RSP + 0x8],RDX
+LEA RDX,[RSP + 0x150]
+MOV qword ptr [RSP + 0x10],RDX
+MOV qword ptr [RSP + 0x18],0x1
+MOV qword ptr [RSP + 0x20],0x1
+CALL fmt.Fprintln
+MOV RAX,qword ptr [RSP + 0x68]
+MOV RCX,qword ptr [RSP + 0x58]
+JMP LAB_004aa0d8
+LAB_004aa2df:
+MOVZX EAX,byte ptr [RSP + 0x4e]
+MOV byte ptr [RSP + 0x4f],AL
+LEA RCX,[0x4c52c0]
+MOV qword ptr [RSP],RCX
+LEA RDX,[RSP + 0x170]
+MOV qword ptr [RSP + 0x8],RDX
+LEA RBX,[RSP + 0x4f]
+MOV qword ptr [RSP + 0x10],RBX
+CALL runtime.mapassign
+MOV RAX,qword ptr [RSP + 0x18]
+MOV byte ptr [RAX],0x1
+MOV RAX,qword ptr [RSP + 0x50]
+MOV RCX,qword ptr [RSP + 0x110]
+MOVZX EDX,byte ptr [RSP + 0x4e]
+MOV RBX,qword ptr [RSP + 0x60]
+MOV RSI,qword ptr [RSP + 0xf8]
+XOR EDI,EDI
+XOR R8D,R8D
+JMP LAB_004aa340
+LAB_004aa33d:
+INC RDI
+LAB_004aa340:
+CMP RDI,RAX
+JGE LAB_004aa360
+MOVZX R9D,byte ptr [RSI + RDI*0x1]
+CMP R9B,DL
+JNZ LAB_004aa33d
+CMP RDI,RBX
+JNC LAB_004aa5c4
+MOV byte ptr [RCX + RDI*0x1],DL
+INC R8
+JMP LAB_004aa33d
+LAB_004aa360:
+TEST R8,R8
+JZ LAB_004aa3fa
+MOV RDX,qword ptr [RSP + 0x58]
+SUB RDX,R8
+TEST RDX,RDX
+JZ LAB_004aa386
+MOV RDI,qword ptr [RSP + 0x68]
+LAB_004aa37b:
+MOV RAX,RDI
+MOV RCX,RDX
+JMP LAB_004aa0d8
+LAB_004aa386:
+XORPS XMM0,XMM0
+MOVUPS xmmword ptr [RSP + 0x120],XMM0
+LEA RAX,[0x4bdf40]
+MOV qword ptr [RSP + 0x120],RAX
+LEA RAX,[0x5011e0]
+MOV qword ptr [RSP + 0x128],RAX
+MOV RAX,qword ptr [os.Stdout]
+LEA RCX,[0x502b40]
+MOV qword ptr [RSP],RCX
+MOV qword ptr [RSP + 0x8],RAX
+LEA RAX,[RSP + 0x120]
+MOV qword ptr [RSP + 0x10],RAX
+MOV qword ptr [RSP + 0x18],0x1
+MOV qword ptr [RSP + 0x20],0x1
+CALL fmt.Fprintln
+MOV RBP,qword ptr [RSP + 0x250]
+ADD RSP,0x258
+RET
+LAB_004aa3fa:
+MOV RDX,qword ptr [DAT_005931b8]
+MOV RDI,qword ptr [main.BODYPARTS]
+MOV R8,qword ptr [RSP + 0x68]
+CMP R8,RDX
+JNC LAB_004aa5b9
+SHL R8,0x4
+MOV RCX,qword ptr [RDI + R8*0x1 + 0x8]
+MOV RDX,qword ptr [RDI + R8*0x1]
+MOV qword ptr [RSP],0x0
+LEA RBX,[0x4e748a]
+MOV qword ptr [RSP + 0x8],RBX
+MOV qword ptr [RSP + 0x10],0xe
+MOV qword ptr [RSP + 0x18],RDX
+MOV qword ptr [RSP + 0x20],RCX
+LEA RCX,[0x4e5d41]
+MOV qword ptr [RSP + 0x28],RCX
+MOV qword ptr [RSP + 0x30],0x1
+CALL runtime.concatstring3
+MOV RAX,qword ptr [RSP + 0x38]
+MOV RCX,qword ptr [RSP + 0x40]
+MOV qword ptr [RSP],RAX
+MOV qword ptr [RSP + 0x8],RCX
+CALL runtime.convTstring
+MOV RAX,qword ptr [RSP + 0x10]
+XORPS XMM0,XMM0
+MOVUPS xmmword ptr [RSP + 0x140],XMM0
+LEA RCX,[0x4bdf40]
+MOV qword ptr [RSP + 0x140],RCX
+MOV qword ptr [RSP + 0x148],RAX
+MOV RAX,qword ptr [os.Stdout]
+LEA RDX,[0x502b40]
+MOV qword ptr [RSP],RDX
+MOV qword ptr [RSP + 0x8],RAX
+LEA RAX,[RSP + 0x140]
+MOV qword ptr [RSP + 0x10],RAX
+MOV qword ptr [RSP + 0x18],0x1
+MOV qword ptr [RSP + 0x20],0x1
+CALL fmt.Fprintln
+MOV RAX,qword ptr [RSP + 0x68]
+INC RAX
+CMP qword ptr [DAT_005931b8],RAX
+JZ LAB_004aa516
+MOV RCX,qword ptr [RSP + 0x110]
+MOV RBX,qword ptr [RSP + 0x60]
+MOV RSI,qword ptr [RSP + 0xf8]
+MOV RDI,RAX
+MOV RDX,qword ptr [RSP + 0x58]
+MOV RAX,qword ptr [RSP + 0x50]
+JMP LAB_004aa37b
+LAB_004aa516:
+XORPS XMM0,XMM0
+MOVUPS xmmword ptr [RSP + 0x130],XMM0
+LEA RAX,[0x4bdf40]
+MOV qword ptr [RSP + 0x130],RAX
+LEA RAX,[0x5011d0]
+MOV qword ptr [RSP + 0x138],RAX
+MOV RAX,qword ptr [os.Stdout]
+LEA RCX,[0x502b40]
+MOV qword ptr [RSP],RCX
+MOV qword ptr [RSP + 0x8],RAX
+LEA RAX,[RSP + 0x130]
+MOV qword ptr [RSP + 0x10],RAX
+MOV qword ptr [RSP + 0x18],0x1
+MOV qword ptr [RSP + 0x20],0x1
+CALL fmt.Fprintln
+MOV RBP,qword ptr [RSP + 0x250]
+ADD RSP,0x258
+RET
+LAB_004aa58a:
+MOV RBP,qword ptr [RSP + 0x250]
+ADD RSP,0x258
+RET
+LAB_004aa59a:
+MOV RDX,RCX
+MOV RCX,RAX
+MOV RAX,RDX
+JMP LAB_004a9dd5
+LAB_004aa5a8:
+LEA RAX,[0x4e664d]
+CALL runtime.gcWriteBarrier
+JMP LAB_004a9d48
+LAB_004aa5b9:
+MOV RAX,R8
+MOV RCX,RDX
+CALL runtime.panicIndex
+LAB_004aa5c4:
+MOV RAX,RDI
+MOV RCX,RBX
+CALL runtime.panicIndex
+LAB_004aa5cf:
+MOV EAX,0x1
+MOV RCX,RBX
+CALL runtime.panicSliceB
+LAB_004aa5dc:
+XOR EAX,EAX
+CALL runtime.panicIndex
+LAB_004aa5e4:
+CALL runtime.morestack_noctxt
+JMP funcE
+//end of function funcE
+
+Reference Table:
+Address Data
+0059a168 undefined8 ??
+0059a160 undefined8 ??
+005b5820 undefined4 ??
+004e664d ?? 73h    s
+004e664d ?? 73h    s
+00599c40 undefined8 ??
+004e5d60 ?? 77h    w
+004e5d60 ?? 77h    w
+004e8800 ?? 2Fh    /
+004e8800 ?? 2Fh    /
+004e6bae ?? 77h    w
+004e6bae ?? 77h    w
+00599c40 undefined8 ??
+004e5d5f ?? 73h    s
+004e5d5f ?? 73h    s
+004e6e0a ?? 72h    r
+004e6e0a ?? 72h    r
+0059a160 undefined8 ??
+0059a170 undefined8 ??
+0059a168 undefined8 ??
+00599c40 undefined8 ??
+00599c50 undefined8 ??
+00599c60 undefined8 ??
+004be080 ?? 01h
+004be080 ?? 01h
+00502b20 undefined1[32] 
+00502b20 undefined1[32] 
+004e6e0a ?? 72h    r
+004e5d5b ?? 5Fh    _
+004e5d5b ?? 5Fh    _
+004e6e0a ?? 72h    r
+004e6e0a ?? 72h    r
+004e6e0a ?? 72h    r
+004e6e0a ?? 72h    r
+004e6e0a ?? 72h    r
+004e6e0a ?? 72h    r
+004e6e0a ?? 72h    r
+004e5d42 ?? 28h    (
+004e5d42 ?? 28h    (
+004e6e0a ?? 72h    r
+004e6e0a ?? 72h    r
+004e5de8 ?? 29h    )
+004e5de8 ?? 29h    )
+004bdf40 ?? 10h
+004bdf40 ?? 10h
+00599c68 undefined8 ??
+00502b40 undefined1[32] 
+00502b40 undefined1[32] 
+004e5de8 ?? 29h    )
+004c52c0 ?? 08h
+004c52c0 ?? 08h
+004bdf40 ?? 10h
+004bdf40 ?? 10h
+005011c0 addr 004e8e9e
+005011c0 addr 004e8e9e
+00599c68 undefined8 ??
+00502b40 undefined1[32] 
+00502b40 undefined1[32] 
+004c52c0 ?? 08h
+004c52c0 ?? 08h
+004e6e0a ?? 72h    r
+004bdf40 ?? 10h
+004bdf40 ?? 10h
+005011e0 addr 004e5ec4
+005011e0 addr 004e5ec4
+00599c68 undefined8 ??
+00502b40 undefined1[32] 
+00502b40 undefined1[32] 
+005931b8 undefined8 0000000000000007h
+00596e80 addr 004e605c
+005931b0 addr 00596e80
+00596e88 ?? 05h
+00596e80 addr 004e605c
+004e748a ?? 59h    Y
+004e748a ?? 59h    Y
+004e5d41 ?? 21h    !
+004e5d41 ?? 21h    !
+004bdf40 ?? 10h
+004bdf40 ?? 10h
+00599c68 undefined8 ??
+00502b40 undefined1[32] 
+00502b40 undefined1[32] 
+005931b8 undefined8 0000000000000007h
+004bdf40 ?? 10h
+004bdf40 ?? 10h
+005011d0 addr 004e7230
+005011d0 addr 004e7230
+00599c68 undefined8 ??
+00502b40 undefined1[32] 
+00502b40 undefined1[32] 
+004e664d ?? 73h    s
+004e6e0a ?? 72h    r
+
+Generate just the Go code for the function that produced the above x86 64-bit assembly. The Go code should only represent the funcE function. The Go code is idiomatic and uses standard libraries and channels.

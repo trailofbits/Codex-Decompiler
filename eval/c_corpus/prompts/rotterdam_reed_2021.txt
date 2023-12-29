@@ -1,0 +1,108 @@
+x86 64-bit Assembly:
+
+default funcF(int argc, char * * argv):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0xb0
+MOV dword ptr [RBP + -0x4],EDI
+MOV qword ptr [RBP + -0x10],RSI
+LEA RDI,[RBP + -0x90]
+MOV RSI,0x402050
+MOV EDX,0x80
+CALL memcpy
+MOV dword ptr [RBP + -0x98],0x0
+MOV dword ptr [RBP + -0x9c],0x0
+LAB_00401301:
+MOV EDI,dword ptr [RBP + -0x4]
+MOV RSI,qword ptr [RBP + -0x10]
+LEA RCX,[RBP + -0x90]
+MOV RDX,0x402018
+LEA R8,[RBP + -0x94]
+CALL getopt_long
+MOV dword ptr [RBP + -0xa0],EAX
+CMP dword ptr [RBP + -0xa0],0x0
+JGE LAB_0040133d
+JMP LAB_00401418
+LAB_0040133d:
+MOV EAX,dword ptr [RBP + -0xa0]
+MOV dword ptr [RBP + -0xa4],EAX
+SUB EAX,0x3f
+JZ LAB_00401404
+JMP LAB_00401357
+LAB_00401357:
+MOV EAX,dword ptr [RBP + -0xa4]
+SUB EAX,0x64
+JZ LAB_004013a2
+JMP LAB_0040136b
+LAB_0040136b:
+MOV EAX,dword ptr [RBP + -0xa4]
+SUB EAX,0x65
+JZ LAB_00401393
+JMP LAB_0040137f
+LAB_0040137f:
+MOV EAX,dword ptr [RBP + -0xa4]
+SUB EAX,0x6b
+JZ LAB_004013b1
+JMP LAB_00401409
+LAB_00401393:
+MOV dword ptr [RBP + -0x98],0x0
+JMP LAB_00401413
+LAB_004013a2:
+MOV dword ptr [RBP + -0x98],0x1
+JMP LAB_00401413
+LAB_004013b1:
+MOV RDI,qword ptr [optarg]
+CALL slurp
+MOV dword ptr [RBP + -0x9c],EAX
+CMP dword ptr [RBP + -0x9c],0x1
+JL LAB_004013de
+CMP dword ptr [RBP + -0x9c],0x19
+JLE LAB_004013fa
+LAB_004013de:
+MOV RSI,qword ptr [optarg]
+MOV RDI,0x40201d
+CALL domp
+JMP LAB_004013ff
+LAB_004013fa:
+JMP LAB_00401413
+LAB_004013ff:
+JMP LAB_00401404
+LAB_00401404:
+JMP LAB_00401409
+LAB_00401409:
+MOV EDI,0x1
+CALL _exit
+LAB_00401413:
+JMP LAB_00401301
+LAB_00401418:
+CMP dword ptr [RBP + -0x9c],0x0
+JNZ LAB_00401448
+MOV EDI,0x2
+MOV RSI,0x40202b
+MOV EDX,0xe
+CALL write
+MOV EDI,0x1
+CALL _exit
+LAB_00401448:
+CMP dword ptr [RBP + -0x98],0x0
+JZ LAB_00401466
+MOV EAX,0x1a
+SUB EAX,dword ptr [RBP + -0x9c]
+MOV dword ptr [RBP + -0x9c],EAX
+LAB_00401466:
+MOV EAX,dword ptr [RBP + -0x9c]
+ADD RSP,0xb0
+POP RBP
+RET
+//end of function funcF
+
+Reference Table:
+Address Data
+00402050 addr 00402004
+00402018 ?? 65h    e
+00404068 undefined8 0000000000000000h
+00404068 undefined8 0000000000000000h
+0040201d ds "Invalid key: "
+0040202b ds "Key required.\n"
+
+Generate just the C code for the function that produced the above x86 64-bit assembly. The C code should only represent funcF function. The C code is idiomatic and uses functions, types, and structures from standard libraries.

@@ -1,0 +1,109 @@
+x86 64-bit Assembly:
+
+default funcB(int argc, char * * argv):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0x40
+MOV dword ptr [RBP + -0x4],0x0
+MOV dword ptr [RBP + -0x8],EDI
+MOV qword ptr [RBP + -0x10],RSI
+MOV qword ptr [RBP + -0x18],0x0
+MOV qword ptr [RBP + -0x20],-0x1
+CMP dword ptr [RBP + -0x8],0x3
+JNZ LAB_00401277
+MOV RAX,qword ptr [RBP + -0x10]
+MOV RDI,qword ptr [RAX + 0x8]
+CALL atoll
+MOV qword ptr [RBP + -0x18],RAX
+MOV RAX,qword ptr [RBP + -0x10]
+MOV RDI,qword ptr [RAX + 0x10]
+CALL atoll
+MOV qword ptr [RBP + -0x20],RAX
+JMP LAB_00401297
+LAB_00401277:
+CMP dword ptr [RBP + -0x8],0x2
+JNZ LAB_00401292
+MOV RAX,qword ptr [RBP + -0x10]
+MOV RDI,qword ptr [RAX + 0x8]
+CALL atoll
+MOV qword ptr [RBP + -0x20],RAX
+LAB_00401292:
+JMP LAB_00401297
+LAB_00401297:
+CMP qword ptr [RBP + -0x18],0x0
+JL LAB_004012bb
+CMP qword ptr [RBP + -0x20],0x0
+JL LAB_004012bb
+MOV RAX,qword ptr [RBP + -0x18]
+CMP RAX,qword ptr [RBP + -0x20]
+JLE LAB_004012f0
+LAB_004012bb:
+MOV RDI,0x4041a0
+MOV RSI,0x402004
+CALL std::operator<<
+MOV RDI,RAX
+MOV RSI,0x401030
+CALL std::basic_ostream<char,std::char_traits<char>>::operator<<
+MOV EDI,0x1
+CALL exit
+LAB_004012f0:
+MOV RAX,qword ptr [RBP + -0x18]
+MOV qword ptr [RBP + -0x28],RAX
+LAB_004012f8:
+MOV RAX,qword ptr [RBP + -0x28]
+CMP RAX,qword ptr [RBP + -0x20]
+JG LAB_004013bb
+MOV qword ptr [RBP + -0x30],0x1
+MOV RAX,qword ptr [RBP + -0x28]
+MOV qword ptr [RBP + -0x38],RAX
+MOV qword ptr [RBP + -0x40],0x1
+LAB_0040131e:
+CMP qword ptr [RBP + -0x38],0x0
+JZ LAB_00401384
+MOV RSI,qword ptr [RBP + -0x30]
+MOV RDI,0x404080
+CALL std::basic_ostream<char,std::char_traits<char>>::operator<<
+MOV RDI,RAX
+MOV ESI,0x9
+CALL std::operator<<
+MOV RAX,qword ptr [RBP + -0x38]
+IMUL RAX,qword ptr [RBP + -0x30]
+MOV qword ptr [RBP + -0x30],RAX
+MOV RCX,qword ptr [RBP + -0x40]
+MOV RAX,qword ptr [RBP + -0x30]
+CQO
+IDIV RCX
+MOV qword ptr [RBP + -0x30],RAX
+MOV RAX,qword ptr [RBP + -0x38]
+SUB RAX,0x1
+MOV qword ptr [RBP + -0x38],RAX
+MOV RAX,qword ptr [RBP + -0x40]
+ADD RAX,0x1
+MOV qword ptr [RBP + -0x40],RAX
+JMP LAB_0040131e
+LAB_00401384:
+MOV RDI,0x404080
+MOV ESI,0x1
+CALL std::basic_ostream<char,std::char_traits<char>>::operator<<
+MOV RDI,RAX
+MOV RSI,0x401030
+CALL std::basic_ostream<char,std::char_traits<char>>::operator<<
+MOV RAX,qword ptr [RBP + -0x28]
+ADD RAX,0x1
+MOV qword ptr [RBP + -0x28],RAX
+JMP LAB_004012f8
+LAB_004013bb:
+MOV EAX,dword ptr [RBP + -0x4]
+ADD RSP,0x40
+POP RBP
+RET
+//end of function funcB
+
+Reference Table:
+Address Data
+004041a0 undefined1[272] 
+00402004 ds "USAGE: ./blaise (range)"
+00404080 undefined1[272] 
+00404080 undefined1[272] 
+
+Generate just the C++ code for the function that produced the above x86 64-bit assembly. The C++ code should only represent the funcB function. The C++ code is idiomatic and uses standard libraries and range based loops.

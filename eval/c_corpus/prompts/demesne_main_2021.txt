@@ -1,0 +1,96 @@
+x86 64-bit Assembly:
+
+default funcB(int argc, char * * argv):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0x60
+MOV dword ptr [RBP + -0x4],0x0
+MOV dword ptr [RBP + -0x8],EDI
+MOV qword ptr [RBP + -0x10],RSI
+CMP dword ptr [RBP + -0x8],0x2
+JGE LAB_004011ed
+MOV RDI,0x402004
+MOV AL,0x0
+CALL printf
+MOV dword ptr [RBP + -0x4],0xffffffff
+JMP LAB_004012dc
+LAB_004011ed:
+MOV RAX,qword ptr [RBP + -0x10]
+MOV RDI,qword ptr [RAX + 0x8]
+XOR EAX,EAX
+MOV ESI,EAX
+XOR EDX,EDX
+CALL strtol
+MOV dword ptr [RBP + -0x14],EAX
+LEA RDI,[RBP + -0x40]
+XOR ESI,ESI
+MOV EDX,0x20
+CALL memset
+MOV dword ptr [RBP + -0x44],0x0
+LAB_0040121a:
+CMP dword ptr [RBP + -0x44],0x10
+JGE LAB_004012d5
+LEA RDI,[RBP + -0x40]
+XOR ESI,ESI
+MOV EDX,0x20
+CALL memset
+MOV EAX,dword ptr [RBP + -0x14]
+XOR EAX,dword ptr [RBP + -0x44]
+MOV dword ptr [RBP + -0x48],EAX
+LEA RDI,[RBP + -0x48]
+CALL rrrand
+MOV dword ptr [RBP + -0x4c],EAX
+MOV EAX,dword ptr [RBP + -0x4c]
+MOV ECX,0x5
+CDQ
+IDIV ECX
+ADD EDX,0x5
+MOV dword ptr [RBP + -0x50],EDX
+MOV dword ptr [RBP + -0x54],0x0
+LAB_00401261:
+MOV EAX,dword ptr [RBP + -0x54]
+CMP EAX,dword ptr [RBP + -0x50]
+JGE LAB_0040129f
+LEA RDI,[RBP + -0x48]
+CALL rrrand
+MOV dword ptr [RBP + -0x58],EAX
+MOV EAX,dword ptr [RBP + -0x58]
+MOV ECX,0x1a
+CDQ
+IDIV ECX
+ADD EDX,0x61
+MOV CL,DL
+MOVSXD RAX,dword ptr [RBP + -0x54]
+MOV byte ptr [RBP + RAX*0x1 + -0x40],CL
+MOV EAX,dword ptr [RBP + -0x54]
+ADD EAX,0x1
+MOV dword ptr [RBP + -0x54],EAX
+JMP LAB_00401261
+LAB_0040129f:
+LEA RDI,[RBP + -0x40]
+MOV RSI,0x40201c
+CALL strcat
+LEA RSI,[RBP + -0x40]
+MOV RDI,0x402021
+MOV AL,0x0
+CALL printf
+MOV EAX,dword ptr [RBP + -0x44]
+ADD EAX,0x1
+MOV dword ptr [RBP + -0x44],EAX
+JMP LAB_0040121a
+LAB_004012d5:
+MOV dword ptr [RBP + -0x4],0x0
+LAB_004012dc:
+MOV EAX,dword ptr [RBP + -0x4]
+ADD RSP,0x60
+POP RBP
+RET
+//end of function funcB
+
+Reference Table:
+Address Data
+00402004 ds "Please provide a seed.\n"
+0040201c ?? 2Eh    .
+00402021 ?? 25h    %
+
+Generate just the C code for the function that produced the above x86 64-bit assembly. The C code should only represent the funcB function. The C code is idiomatic and uses functions, types, and structures from standard libraries.

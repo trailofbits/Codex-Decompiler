@@ -1,0 +1,59 @@
+x86 64-bit Assembly:
+
+default funcE(RNG * rng, uchar * state):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0x30
+MOV qword ptr [RBP + -0x8],RDI
+MOV qword ptr [RBP + -0x10],RSI
+LEA RDI,[RBP + -0x18]
+XOR ESI,ESI
+MOV EDX,0x2
+CALL std::uniform_int_distribution<int>::uniform_int_distribution
+LEA RDI,[RBP + -0x20]
+XOR ESI,ESI
+MOV EDX,0x1
+CALL std::uniform_int_distribution<int>::uniform_int_distribution
+MOV RAX,qword ptr [RBP + -0x10]
+MOV qword ptr [RBP + -0x30],RAX
+MOV RSI,qword ptr [RBP + -0x8]
+LEA RDI,[RBP + -0x18]
+CALL std::uniform_int_distribution<int>::operator()<std::mersenne_twister_engine<unsigned_long,_64,_312,_156,_31,_13043109905998158313,_29,_6148914691236517205,_17,_8202884508482404352,_37,_18444473444759240704,_43,_6364136223846793005>_>
+MOV ECX,EAX
+MOV RAX,qword ptr [RBP + -0x30]
+MOVSXD RCX,ECX
+ADD RAX,RCX
+MOV qword ptr [RBP + -0x28],RAX
+MOV RSI,qword ptr [RBP + -0x8]
+LEA RDI,[RBP + -0x20]
+CALL std::uniform_int_distribution<int>::operator()<std::mersenne_twister_engine<unsigned_long,_64,_312,_156,_31,_13043109905998158313,_29,_6148914691236517205,_17,_8202884508482404352,_37,_18444473444759240704,_43,_6364136223846793005>_>
+MOV EDX,EAX
+SHL EDX,0x1
+SUB EDX,0x1
+MOV RAX,qword ptr [RBP + -0x28]
+MOVZX ECX,byte ptr [RAX]
+ADD ECX,EDX
+MOV byte ptr [RAX],CL
+MOV RAX,qword ptr [RBP + -0x28]
+MOVZX EAX,byte ptr [RAX]
+CMP EAX,0x9
+JLE LAB_0040150c
+MOV RAX,qword ptr [RBP + -0x28]
+MOV byte ptr [RAX],0x1
+LAB_0040150c:
+MOV RAX,qword ptr [RBP + -0x28]
+MOVZX EAX,byte ptr [RAX]
+CMP EAX,0x5
+JLE LAB_00401523
+MOV RAX,qword ptr [RBP + -0x28]
+MOV byte ptr [RAX],0x4
+LAB_00401523:
+ADD RSP,0x30
+POP RBP
+RET
+//end of function funcE
+
+Reference Table:
+Address Data
+
+Generate just the C++ code for the function that produced the above x86 64-bit assembly. The C++ code should only represent the funcE function. The C++ code is idiomatic and uses standard libraries and range based loops.
