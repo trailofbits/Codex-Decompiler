@@ -33,6 +33,8 @@ from docking.action import KeyBindingData
 from resources import ResourceManager
 from docking.action import ToolBarData
 from docking.widgets.dialogs import MultiLineInputDialog
+from ghidra.util.task import Task
+from ghidra.util.task import TaskLauncher
 
 API_TYPES = ["openai", "azure"]
 DEFAULT_API_TYPE = "openai"
@@ -167,6 +169,15 @@ class ScrollDocumentListener(DocumentListener):
         
     def changedUpdate(self, documentEvent):
         self.lineTextArea.updateLineNumbers()
+
+class DecompileTask(Task):
+    def __init__(self, address, temp):
+        Task.__init__(self, "Decompiling function", False, False, False, False)
+        self.address = address
+        self.temp = temp
+
+    def run(self, monitor):
+        disassembleFunction(self.address, self.temp)
         
 class PluginDockingAction(DockingAction):
     def __init__(self):
@@ -183,10 +194,17 @@ class PluginDockingAction(DockingAction):
         if actionContext.getComponentProvider().getName() == "Listing":
             global currentAddress
             currentAddress = actionContext.getLocation().getAddress()
-            disassembleFunction(actionContext.getLocation().getAddress(), 0)
+            TaskLauncher.launch(DecompileTask(currentAddress, 0))
 
 
 class ContextDockingAction(DockingAction):
+    class ContextDockingTask(Task):
+        def __init__(self):
+            Task.__init__(self, "Generating context for pseudocode", False, False, False, False)
+
+        def run(self, monitor):
+            generateContextApi(guiAdapter.getText())
+
     def __init__(self, owner):
         DockingAction.__init__(self, "Generate Context", owner, False)
         self.markHelpUnnecessary()
@@ -195,7 +213,7 @@ class ContextDockingAction(DockingAction):
         self.setToolBarData(ToolBarData(icon))
 
     def actionPerformed(self, actionContext):
-        generateContextApi(guiAdapter.getText())
+        TaskLauncher.launch(self.ContextDockingTask())
 
 
 class EditQueryDockingAction(DockingAction):
@@ -235,6 +253,34 @@ class CustomMultiLineInputDialog(MultiLineInputDialog):
         self.dispose()
 
 class SaveAction(DockingAction):
+    class SaveActionTask(Task):
+        def __init__(self):
+            Task.__init__(self, "Saving decompilation to cache", False, False, False, False)
+
+        def run(self, monitor):
+            api_type = get_tool_option("openai.api_type")
+            model_name = get_code_model()
+            filename = re.sub(
+                r"\W+",
+                "",
+                os.path.basename(currentProgram.getExecutablePath()) + "-"
+                + currentFunction.getName(),
+            ) + "-" + api_type + "-" + model_name + ".txt"
+            filepath = os.path.join(pluginPath, "output", filename)
+            if os.path.isfile(filepath):
+                file = open(filepath, "r")
+                jsonData = json.load(file)
+                file.close()
+                file = open(filepath, "w")
+                jsonData[currentQuery] = str(guiAdapter.getText())
+                json.dump(jsonData, file)
+                file.close()
+            else:
+                file = open(filepath, "w")
+                jsonData = {currentQuery:str(guiAdapter.getText())}
+                json.dump(jsonData, file)
+                file.close()
+
     def __init__(self, owner):
         DockingAction.__init__(self, "Save Edits", owner, False)
         self.markHelpUnnecessary()
@@ -243,23 +289,10 @@ class SaveAction(DockingAction):
         self.setToolBarData(ToolBarData(icon))
     
     def actionPerformed(self, actionContext):
-        global guiAdapter
-        global currentQuery
-        filename = re.sub(
-        r"\W+",
-        "",
-        os.path.basename(currentProgram.getExecutablePath())
-        + currentFunction.getName(),
-        )
-        f = open(pluginPath + "output/" + filename + ".txt", "r")
-        jsonData = json.load(f)
-        f.close()
-        jsonData.update({currentQuery:str(guiAdapter.getText())})
-        f2 = open(pluginPath + "output/" + filename + ".txt", "w")
-        json.dump(jsonData, f2)
-        f2.close()
+        TaskLauncher.launch(self.SaveActionTask())
         
-class RefreshAction(DockingAction):
+        
+class RefreshAction(DockingAction):        
     def __init__(self, owner):
         DockingAction.__init__(self, "Re-generate Pseudocode", owner, False)
         self.markHelpUnnecessary()
@@ -268,9 +301,30 @@ class RefreshAction(DockingAction):
         self.setToolBarData(ToolBarData(icon))
     
     def actionPerformed(self, actionContext):
-        disassembleFunction(currentAddress, 0.25)
+        TaskLauncher.launch(DecompileTask(currentAddress, 0.25))
         
 class FindVulnAction(DockingAction):
+    class FindVulnTask(Task):
+        def __init__(self):
+            Task.__init__(self, "Finding vulnerabilities in pseudocode", False, False, False, False)
+
+        def run(self, monitor):
+            global guiAdapter
+            decompiledCode = guiAdapter.getText()
+            prompt = "Find any possible vulnerabilities in the following code. Describe the cause of the bug and possible ways to trigger it in a code comment. Be concise and only provide relevant information.\nCode:\n\n" + decompiledCode
+            global currentQuery
+            currentQuery = prompt
+            data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0, "stream": False}
+            output = checkCacheOrSend(get_code_model(), data, decompiledCode)
+            if output is not None:
+                if guiAdapter is None:
+                    guiAdapter = PluginComponentProviderAdapter(
+                        state.getTool(), "OpenAI Pseudocode"
+                    )
+                guiAdapter.update(str(output))
+            else:
+                print("Invalid output from api")
+
     def __init__(self, owner):
         DockingAction.__init__(self, "Find vulns", owner, False)
         self.markHelpUnnecessary()
@@ -279,23 +333,33 @@ class FindVulnAction(DockingAction):
         self.setToolBarData(ToolBarData(icon))
         
     def actionPerformed(self, actionContext):
-        global guiAdapter
-        decompiledCode = guiAdapter.getText()
-        prompt = "Find any possible vulnerabilities in the following code. Describe the cause of the bug and possible ways to trigger it in a code comment.\nCode:\n\n" + decompiledCode
-        global currentQuery
-        currentQuery = prompt
-        data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0, "stream": False}
-        output = checkCacheOrSend(get_text_model(), data, decompiledCode)
-        if output is not None:
-            if guiAdapter is None:
-                guiAdapter = PluginComponentProviderAdapter(
-                    state.getTool(), "OpenAI Pseudocode"
-                )
-            guiAdapter.update(str(output))
-        else:
-            print("Invalid output from api")
+        TaskLauncher.launch(self.FindVulnTask())
             
 class AltDecompAction(DockingAction):
+    class AltDecompTask(Task):
+        def __init__(self):
+            Task.__init__(self, "Decompiling function using Ghidra's pseudocode", False, False, False, False)
+
+        def run(self, monitor):
+            decompInterface = DecompInterface()
+            decompInterface.openProgram(currentProgram)
+            results = decompInterface.decompileFunction(currentFunction, 0, None)
+            functionCode = results.getDecompiledFunction().getC()
+            prompt = "Understand this code and rewrite it in a better manner with more descriptive function/variable names, better logic, and more.\nCode:\n" + functionCode + "New Code:\n"
+            global currentQuery
+            currentQuery = prompt
+            data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0}
+            output = checkCacheOrSend(get_code_model(), data)
+            global guiAdapter
+            if output is not None:
+                if guiAdapter is None:
+                    guiAdapter = PluginComponentProviderAdapter(
+                        state.getTool(), "OpenAI Pseudocode"
+                    )
+                guiAdapter.update(str(output))
+            else:
+                print("Invalid output from api")
+
     def __init__(self, owner):
         DockingAction.__init__(self, "Decompile using Ghidra's decomp", owner, False)
         self.markHelpUnnecessary()
@@ -304,24 +368,8 @@ class AltDecompAction(DockingAction):
         self.setToolBarData(ToolBarData(icon))
         
     def actionPerformed(self, actionContext):
-        decompInterface = DecompInterface()
-        decompInterface.openProgram(currentProgram)
-        results = decompInterface.decompileFunction(currentFunction, 0, None)
-        functionCode = results.getDecompiledFunction().getC()
-        prompt = "Understand this code and rewrite it in a better manner with more descriptive function/variable names, better logic, and more.\nCode:\n" + functionCode + "New Code:\n"
-        global currentQuery
-        currentQuery = prompt
-        data = {"prompt": prompt, "max_tokens": 512, "n": 1, "temperature": 0}
-        output = checkCacheOrSend(get_code_model(), data)
-        global guiAdapter
-        if output is not None:
-            if guiAdapter is None:
-                guiAdapter = PluginComponentProviderAdapter(
-                    state.getTool(), "OpenAI Pseudocode"
-                )
-            guiAdapter.update(str(output))
-        else:
-            print("Invalid output from api")
+        TaskLauncher.launch(self.AltDecompTask())
+
             
 class LanguageTemplate:
     def __init__(self, inputString):
@@ -485,7 +533,7 @@ def decompileApi(functionData, temp):
 
 def generateContextApi(pseudocode):
     prompt = (
-        "Understand the following code and generate a description for it as a comment.\n\nCode:\n"
+        "Understand the following code and generate a description for it as a code comment. Be concise and only provide relevant information.\n\nCode:\n"
         + pseudocode
     )
     global currentQuery
@@ -509,11 +557,12 @@ def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
         "",
         os.path.basename(currentProgram.getExecutablePath()) + "-"
         + currentFunction.getName(),
-    ) + "-" + api_type + "-" + model_name
+    ) + "-" + api_type + "-" + model_name + ".txt"
     jsonData = {}
-    if os.path.isfile(pluginPath + "output/" + filename + ".txt") and noCache is False:
-        f = open(pluginPath + "output/" + filename + ".txt", "r")
-        if os.path.getsize(pluginPath + "output/" + filename + ".txt") > 0:
+    filepath = os.path.join(pluginPath, "output", filename)
+    if os.path.isfile(filepath) and noCache is False:
+        f = open(filepath, "r")
+        if os.path.getsize(filepath) > 0:
             jsonData = json.load(f)
         f.close()
         if data.get("prompt") in jsonData:
@@ -528,9 +577,9 @@ def checkCacheOrSend(model_name, data, appendString = None, noCache = False):
     if appendString is not None:
         output += appendString
 
-    jsonData.update({data.get("prompt"): str(output)})
+    jsonData[data.get("prompt")] = str(output)
     if noCache is False:
-        f2 = open(pluginPath + "output/" + filename + ".txt", "w+")
+        f2 = open(filepath, "w+")
         json.dump(jsonData, f2)
         f2.close()
     return output
