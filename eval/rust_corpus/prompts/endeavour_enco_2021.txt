@@ -1,0 +1,263 @@
+x86 64-bit Assembly:
+
+default funcC():
+SUB RSP,0x188
+MOV qword ptr [RSP + 0xd8],RCX
+MOV qword ptr [RSP + 0xd0],RDX
+MOV qword ptr [RSP + 0xb8],RSI
+MOV qword ptr [RSP + 0xc0],RDI
+MOV RAX,RDI
+MOV qword ptr [RSP + 0xc8],RAX
+CALL alloc::string::String::new
+MOV RSI,qword ptr [RSP + 0xd0]
+MOV RDX,qword ptr [RSP + 0xd8]
+MOV byte ptr [RSP + 0xe7],0x0
+LAB_0010e87f:
+LEA RDI,[RSP + 0xe8]
+CALL alloc::str::<impl_str>::to_ascii_uppercase
+JMP LAB_0010e8b6
+LAB_0010e8b6:
+LEA RDI,[RSP + 0xe8]
+CALL <alloc::string::String_as_core::ops::deref::Deref>::deref
+MOV qword ptr [RSP + 0xa8],RDX
+MOV qword ptr [RSP + 0xb0],RAX
+JMP LAB_0010e8fa
+LAB_0010e8fa:
+MOV RSI,qword ptr [RSP + 0xa8]
+MOV RDI,qword ptr [RSP + 0xb0]
+CALL core::str::<impl_str>::chars
+MOV qword ptr [RSP + 0x98],RDX
+MOV qword ptr [RSP + 0xa0],RAX
+JMP LAB_0010e921
+LAB_0010e921:
+MOV RSI,qword ptr [RSP + 0x98]
+MOV RDI,qword ptr [RSP + 0xa0]
+CALL <I_as_core::iter::traits::collect::IntoIterator>::into_iter
+MOV qword ptr [RSP + 0x88],RDX
+MOV qword ptr [RSP + 0x90],RAX
+JMP LAB_0010e948
+LAB_0010e948:
+MOV RAX,qword ptr [RSP + 0x88]
+MOV RCX,qword ptr [RSP + 0x90]
+MOV qword ptr [RSP + 0x100],RCX
+MOV qword ptr [RSP + 0x108],RAX
+LAB_0010e968:
+LEA RDI,[RSP + 0x100]
+CALL <core::str::iter::Chars_as_core::iter::traits::iterator::Iterator>::next
+MOV dword ptr [RSP + 0x84],EAX
+JMP LAB_0010e97e
+LAB_0010e97e:
+MOV EAX,dword ptr [RSP + 0x84]
+MOV dword ptr [RSP + 0x110],EAX
+MOV EAX,0x1
+XOR ECX,ECX
+CMP dword ptr [RSP + 0x110],0x110000
+CMOVZ RAX,RCX
+CMP RAX,0x0
+JNZ LAB_0010e9ba
+LAB_0010e9a8:
+LEA RDI,[RSP + 0xe8]
+CALL core::ptr::drop_in_place<alloc::string::String>
+JMP LAB_0010ecf2
+LAB_0010e9ba:
+MOV EAX,dword ptr [RSP + 0x110]
+MOV dword ptr [RSP + 0x114],EAX
+CMP dword ptr [RSP + 0x114],0x20
+JNZ LAB_0010e9e9
+LAB_0010e9d2:
+MOV RDI,qword ptr [RSP + 0xc0]
+MOV ESI,0x2f
+CALL alloc::string::String::push
+JMP LAB_0010ece5
+LAB_0010e9e9:
+TEST byte ptr [RSP + 0xe7],0x1
+JNZ LAB_0010e9ff
+LAB_0010e9f3:
+CMP dword ptr [RSP + 0x114],0x3f
+JZ LAB_0010ea1d
+JMP LAB_0010ea34
+LAB_0010e9ff:
+MOV RDI,qword ptr [RSP + 0xc0]
+MOV ESI,0x20
+CALL alloc::string::String::push
+JMP LAB_0010ea13
+LAB_0010ea13:
+MOV byte ptr [RSP + 0xe7],0x0
+JMP LAB_0010e9f3
+LAB_0010ea1d:
+MOV RDI,qword ptr [RSP + 0xc0]
+MOV ESI,0x3f
+CALL alloc::string::String::push
+JMP LAB_0010ece0
+LAB_0010ea34:
+MOV RDI,qword ptr [RSP + 0xb8]
+CALL <alloc::vec::Vec<T,A>as_core::ops::deref::Deref>::deref
+MOV qword ptr [RSP + 0x70],RDX
+MOV qword ptr [RSP + 0x78],RAX
+JMP LAB_0010ea4d
+LAB_0010ea4d:
+MOV RSI,qword ptr [RSP + 0x70]
+MOV RDI,qword ptr [RSP + 0x78]
+CALL core::slice::<impl[T]>::iter
+MOV qword ptr [RSP + 0x60],RDX
+MOV qword ptr [RSP + 0x68],RAX
+JMP LAB_0010ea68
+LAB_0010ea68:
+MOV RAX,qword ptr [RSP + 0x60]
+MOV RCX,qword ptr [RSP + 0x68]
+MOV qword ptr [RSP + 0x128],RCX
+MOV qword ptr [RSP + 0x130],RAX
+LEA RAX,[RSP + 0x114]
+MOV qword ptr [RSP + 0x138],RAX
+MOV RSI,qword ptr [RSP + 0x138]
+LEA RDI,[RSP + 0x128]
+CALL <core::slice::iter::Iter<T>as_core::iter::traits::iterator::Iterator>::position
+MOV qword ptr [RSP + 0x50],RDX
+MOV qword ptr [RSP + 0x58],RAX
+JMP LAB_0010eab3
+LAB_0010eab3:
+MOV RAX,qword ptr [RSP + 0x50]
+MOV RCX,qword ptr [RSP + 0x58]
+MOV qword ptr [RSP + 0x118],RCX
+MOV qword ptr [RSP + 0x120],RAX
+CMP qword ptr [RSP + 0x118],0x0
+JNZ LAB_0010eaef
+MOV RDI,qword ptr [RSP + 0xc0]
+MOV ESI,0x3f
+CALL alloc::string::String::push
+JMP LAB_0010ecdb
+LAB_0010eaef:
+MOV RAX,qword ptr [RSP + 0x120]
+MOV qword ptr [RSP + 0x140],RAX
+LEA RDI,[RSP + 0x148]
+CALL alloc::vec::Vec<T>::new
+JMP LAB_0010eb0e
+LAB_0010eb0e:
+MOV byte ptr [RSP + 0xe7],0x1
+LAB_0010eb16:
+CMP qword ptr [RSP + 0x140],0x0
+JA LAB_0010eb3d
+LAB_0010eb21:
+LEA RDI,[RSP + 0x148]
+CALL <alloc::vec::Vec<T,A>as_core::ops::deref::Deref>::deref
+MOV qword ptr [RSP + 0x40],RDX
+MOV qword ptr [RSP + 0x48],RAX
+JMP LAB_0010ebfc
+LAB_0010eb3d:
+MOV RAX,qword ptr [RSP + 0x140]
+AND RAX,0x1
+CMP RAX,0x1
+JNZ LAB_0010eb63
+LEA RDI,[RSP + 0x148]
+MOV ESI,0x2e
+CALL alloc::vec::Vec<T,A>::push
+JMP LAB_0010ebc2
+LAB_0010eb63:
+LEA RDI,[RSP + 0x148]
+MOV ESI,0x2d
+CALL alloc::vec::Vec<T,A>::push
+JMP LAB_0010eb9f
+LAB_0010eb9f:
+JMP LAB_0010eba1
+LAB_0010eba1:
+MOV RAX,qword ptr [RSP + 0x140]
+MOV RCX,RAX
+SUB RCX,0x1
+MOV qword ptr [RSP + 0x38],RCX
+CMP RAX,0x1
+SETC AL
+TEST AL,0x1
+JNZ LAB_0010ebc6
+JMP LAB_0010ebc4
+LAB_0010ebc2:
+JMP LAB_0010eba1
+LAB_0010ebc4:
+JMP LAB_0010ebe6
+LAB_0010ebc6:
+LEA RDI,[0x148430]
+LEA RDX,[0x15aeb8]
+LEA RAX,[0x108ab0]
+MOV ESI,0x21
+CALL RAX
+JMP LAB_0010ebe4
+LAB_0010ebe4:
+UD2
+LAB_0010ebe6:
+MOV RAX,qword ptr [RSP + 0x38]
+SHR RAX,0x1
+MOV qword ptr [RSP + 0x140],RAX
+JMP LAB_0010eb16
+LAB_0010ebfc:
+MOV RSI,qword ptr [RSP + 0x40]
+MOV RDI,qword ptr [RSP + 0x48]
+CALL core::slice::<impl[T]>::iter
+MOV qword ptr [RSP + 0x28],RDX
+MOV qword ptr [RSP + 0x30],RAX
+JMP LAB_0010ec17
+LAB_0010ec17:
+MOV RSI,qword ptr [RSP + 0x28]
+MOV RDI,qword ptr [RSP + 0x30]
+CALL core::iter::traits::iterator::Iterator::rev
+MOV qword ptr [RSP + 0x18],RDX
+MOV qword ptr [RSP + 0x20],RAX
+JMP LAB_0010ec32
+LAB_0010ec32:
+MOV RSI,qword ptr [RSP + 0x18]
+MOV RDI,qword ptr [RSP + 0x20]
+CALL <I_as_core::iter::traits::collect::IntoIterator>::into_iter
+MOV qword ptr [RSP + 0x8],RDX
+MOV qword ptr [RSP + 0x10],RAX
+JMP LAB_0010ec4d
+LAB_0010ec4d:
+MOV RAX,qword ptr [RSP + 0x8]
+MOV RCX,qword ptr [RSP + 0x10]
+MOV qword ptr [RSP + 0x160],RCX
+MOV qword ptr [RSP + 0x168],RAX
+LAB_0010ec67:
+LEA RDI,[RSP + 0x160]
+CALL <core::iter::adapters::rev::Rev<I>as_core::iter::traits::iterator::Iterator>::next
+MOV qword ptr [RSP],RAX
+JMP LAB_0010ec7a
+LAB_0010ec7a:
+MOV RAX,qword ptr [RSP]
+MOV qword ptr [RSP + 0x170],RAX
+MOV RDX,qword ptr [RSP + 0x170]
+MOV EAX,0x1
+XOR ECX,ECX
+CMP RDX,0x0
+CMOVZ RAX,RCX
+CMP RAX,0x0
+JNZ LAB_0010ecb5
+LAB_0010eca3:
+LEA RDI,[RSP + 0x148]
+CALL core::ptr::drop_in_place<alloc::vec::Vec<char>>
+JMP LAB_0010e968
+LAB_0010ecb5:
+MOV RDI,qword ptr [RSP + 0xc0]
+MOV RAX,qword ptr [RSP + 0x170]
+MOV ESI,dword ptr [RAX]
+LAB_0010ecc7:
+CALL alloc::string::String::push
+LAB_0010eccc:
+JMP LAB_0010ecce
+LAB_0010ecce:
+JMP LAB_0010ec67
+LAB_0010ecdb:
+JMP LAB_0010e968
+LAB_0010ece0:
+JMP LAB_0010e968
+LAB_0010ece5:
+MOV byte ptr [RSP + 0xe7],0x0
+JMP LAB_0010e968
+LAB_0010ecf2:
+MOV RAX,qword ptr [RSP + 0xc8]
+ADD RSP,0x188
+RET
+//end of function funcC
+
+Reference Table:
+Address Data
+00148430 ds "attempt to subtract with overflow"
+0015aeb8 addr 00148420
+
+Generate just the Rust code for the function that produced the above x86 64-bit assembly. The Rust code should only represent the funcC function. The Rust code is idiomatic and uses macros, channels, and functions or data types from standard libraries.

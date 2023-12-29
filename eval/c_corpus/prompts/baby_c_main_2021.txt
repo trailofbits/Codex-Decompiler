@@ -1,0 +1,72 @@
+x86 64-bit Assembly:
+
+default funcA():
+ENDBR64
+PUSH RBP
+MOV RBP,RSP
+PUSH RBX
+SUB RSP,0x18
+MOV byte ptr [RBP + -0x15],0x1
+LAB_001011da:
+MOV RAX,qword ptr [stdin]
+MOV RDI,RAX
+CALL getc
+MOV dword ptr [RBP + -0x14],EAX
+CMP dword ptr [RBP + -0x14],-0x1
+JZ LAB_0010127a
+CALL __ctype_b_loc
+MOV RAX,qword ptr [RAX]
+MOV EDX,dword ptr [RBP + -0x14]
+MOVSXD RDX,EDX
+ADD RDX,RDX
+ADD RAX,RDX
+MOVZX EAX,word ptr [RAX]
+MOVZX EAX,AX
+AND EAX,0x2000
+TEST EAX,EAX
+JZ LAB_00101233
+MOV RDX,qword ptr [stdout]
+MOV EAX,dword ptr [RBP + -0x14]
+MOV RSI,RDX
+MOV EDI,EAX
+CALL putc
+MOV byte ptr [RBP + -0x15],0x1
+JMP LAB_001011da
+LAB_00101233:
+CMP byte ptr [RBP + -0x15],0x0
+JZ LAB_0010125a
+MOV RBX,qword ptr [stdout]
+MOV EAX,dword ptr [RBP + -0x14]
+MOV EDI,EAX
+CALL toupper
+MOV RSI,RBX
+MOV EDI,EAX
+CALL putc
+MOV byte ptr [RBP + -0x15],0x0
+JMP LAB_001011da
+LAB_0010125a:
+MOV RBX,qword ptr [stdout]
+MOV EAX,dword ptr [RBP + -0x14]
+MOV EDI,EAX
+CALL tolower
+MOV RSI,RBX
+MOV EDI,EAX
+CALL putc
+JMP LAB_001011da
+LAB_0010127a:
+NOP
+MOV EAX,0x0
+ADD RSP,0x18
+POP RBX
+POP RBP
+RET
+//end of function funcA
+
+Reference Table:
+Address Data
+00104020 undefined8 0000000000000000h
+00104010 undefined8 0000000000000000h
+00104010 undefined8 0000000000000000h
+00104010 undefined8 0000000000000000h
+
+Generate just the C code for the function that produced the above x86 64-bit assembly. The C code should only represent the funcA function. The C code is idiomatic and uses functions, types, and structures from standard libraries.

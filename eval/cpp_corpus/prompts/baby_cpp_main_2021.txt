@@ -1,0 +1,102 @@
+x86 64-bit Assembly:
+
+default funcA(int argc, char * * argv):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0x20
+MOV dword ptr [RBP + -0x4],0x0
+MOV dword ptr [RBP + -0x8],EDI
+MOV qword ptr [RBP + -0x10],RSI
+CMP dword ptr [RBP + -0x8],0x2
+JZ LAB_00401255
+MOV RDI,0x4041a0
+MOV RSI,0x402004
+CALL std::operator<<
+MOV RDI,RAX
+MOV RSI,0x401030
+CALL std::basic_ostream<char,std::char_traits<char>>::operator<<
+MOV EDI,0x2
+CALL exit
+LAB_00401255:
+MOV RAX,qword ptr [RBP + -0x10]
+MOV RDI,qword ptr [RAX + 0x8]
+CALL atoi
+MOV dword ptr [RBP + -0x14],EAX
+MOV dword ptr [RBP + -0x18],0x1
+CMP dword ptr [RBP + -0x14],0x0
+JG LAB_004012ab
+MOV RDI,0x4041a0
+MOV RSI,0x402015
+CALL std::operator<<
+MOV RDI,RAX
+MOV RSI,0x401030
+CALL std::basic_ostream<char,std::char_traits<char>>::operator<<
+MOV EDI,0x2
+CALL exit
+LAB_004012ab:
+MOV EDI,dword ptr [RBP + -0x14]
+CALL std::sqrt<int>
+CVTTSD2SI EAX,XMM0
+MOV dword ptr [RBP + -0x1c],EAX
+LAB_004012ba:
+CMP dword ptr [RBP + -0x1c],0x1
+JLE LAB_004012fd
+MOV EAX,dword ptr [RBP + -0x14]
+CDQ
+IDIV dword ptr [RBP + -0x1c]
+CMP EDX,0x0
+JNZ LAB_004012ea
+MOV EAX,dword ptr [RBP + -0x14]
+CDQ
+IDIV dword ptr [RBP + -0x1c]
+ADD EAX,dword ptr [RBP + -0x18]
+MOV dword ptr [RBP + -0x18],EAX
+MOV EAX,dword ptr [RBP + -0x1c]
+ADD EAX,dword ptr [RBP + -0x18]
+MOV dword ptr [RBP + -0x18],EAX
+LAB_004012ea:
+JMP LAB_004012ef
+LAB_004012ef:
+MOV EAX,dword ptr [RBP + -0x1c]
+ADD EAX,-0x1
+MOV dword ptr [RBP + -0x1c],EAX
+JMP LAB_004012ba
+LAB_004012fd:
+MOV EAX,dword ptr [RBP + -0x18]
+CMP EAX,dword ptr [RBP + -0x14]
+JNZ LAB_00401340
+MOV RDI,0x404080
+MOV RSI,0x40202b
+CALL std::operator<<
+MOV RDI,RAX
+MOV RSI,0x401030
+CALL std::basic_ostream<char,std::char_traits<char>>::operator<<
+MOV dword ptr [RBP + -0x4],0x0
+JMP LAB_00401372
+LAB_00401340:
+MOV RDI,0x404080
+MOV RSI,0x402034
+CALL std::operator<<
+MOV RDI,RAX
+MOV RSI,0x401030
+CALL std::basic_ostream<char,std::char_traits<char>>::operator<<
+MOV dword ptr [RBP + -0x4],0x1
+LAB_00401372:
+MOV EAX,dword ptr [RBP + -0x4]
+ADD RSP,0x20
+POP RBP
+RET
+//end of function funcA
+
+Reference Table:
+Address Data
+004041a0 undefined1[272] 
+00402004 ds "USAGE: ./grade n"
+004041a0 undefined1[272] 
+00402015 ds "Don't be so negative."
+00404080 undefined1[272] 
+0040202b ds "Perfect!"
+00404080 undefined1[272] 
+00402034 ds "Needs improvement."
+
+Generate just the C++ code for the function that produced the above x86 64-bit assembly. The C++ code should only represent the funcA function. The C++ code is idiomatic and uses standard libraries and range based loops.

@@ -1,0 +1,153 @@
+x86 64-bit Assembly:
+
+default funcC(int argc, char * * argv):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0x40
+MOV dword ptr [RBP + -0x4],0x0
+MOV dword ptr [RBP + -0x8],EDI
+MOV qword ptr [RBP + -0x10],RSI
+MOV qword ptr [RBP + -0x18],0x0
+MOV qword ptr [RBP + -0x20],0x0
+MOV qword ptr [RBP + -0x28],0x0
+MOV qword ptr [RBP + -0x30],0x0
+MOV qword ptr [RBP + -0x38],0x0
+LAB_0040131e:
+MOV dword ptr [RBP + -0x3c],0x0
+MOV RDI,0x402020
+LEA RSI,[RBP + -0x3c]
+MOV AL,0x0
+CALL __isoc99_scanf
+CMP EAX,0x1
+JZ LAB_00401348
+JMP LAB_00401495
+LAB_00401348:
+JMP LAB_0040134d
+LAB_0040134d:
+XOR EAX,EAX
+CMP qword ptr [RBP + -0x30],0x0
+MOV byte ptr [RBP + -0x3d],AL
+JZ LAB_0040136d
+MOV RAX,qword ptr [RBP + -0x30]
+MOV EAX,dword ptr [RAX + 0x8]
+CMP EAX,dword ptr [RBP + -0x3c]
+SETG AL
+MOV byte ptr [RBP + -0x3d],AL
+LAB_0040136d:
+MOV AL,byte ptr [RBP + -0x3d]
+TEST AL,0x1
+JNZ LAB_0040137d
+JMP LAB_004013af
+LAB_0040137d:
+MOV RAX,qword ptr [RBP + -0x30]
+MOV qword ptr [RBP + -0x38],RAX
+MOV RAX,qword ptr [RBP + -0x28]
+MOV qword ptr [RBP + -0x30],RAX
+CMP qword ptr [RBP + -0x28],0x0
+JZ LAB_004013aa
+MOV RAX,qword ptr [RBP + -0x28]
+MOV RAX,qword ptr [RAX]
+MOV RCX,qword ptr [RBP + -0x38]
+XOR RAX,RCX
+MOV qword ptr [RBP + -0x28],RAX
+LAB_004013aa:
+JMP LAB_0040134d
+LAB_004013af:
+JMP LAB_004013b4
+LAB_004013b4:
+XOR EAX,EAX
+CMP qword ptr [RBP + -0x30],0x0
+MOV byte ptr [RBP + -0x3e],AL
+JZ LAB_004013d4
+MOV RAX,qword ptr [RBP + -0x30]
+MOV EAX,dword ptr [RAX + 0x8]
+CMP EAX,dword ptr [RBP + -0x3c]
+SETL AL
+MOV byte ptr [RBP + -0x3e],AL
+LAB_004013d4:
+MOV AL,byte ptr [RBP + -0x3e]
+TEST AL,0x1
+JNZ LAB_004013e4
+JMP LAB_00401416
+LAB_004013e4:
+MOV RAX,qword ptr [RBP + -0x30]
+MOV qword ptr [RBP + -0x28],RAX
+MOV RAX,qword ptr [RBP + -0x38]
+MOV qword ptr [RBP + -0x30],RAX
+CMP qword ptr [RBP + -0x38],0x0
+JZ LAB_00401411
+MOV RAX,qword ptr [RBP + -0x38]
+MOV RAX,qword ptr [RAX]
+MOV RCX,qword ptr [RBP + -0x28]
+XOR RAX,RCX
+MOV qword ptr [RBP + -0x38],RAX
+LAB_00401411:
+JMP LAB_004013b4
+LAB_00401416:
+CMP qword ptr [RBP + -0x30],0x0
+JZ LAB_00401456
+MOV RAX,qword ptr [RBP + -0x30]
+MOV EAX,dword ptr [RAX + 0x8]
+CMP EAX,dword ptr [RBP + -0x3c]
+JG LAB_00401439
+MOV RAX,qword ptr [RBP + -0x30]
+MOV qword ptr [RBP + -0x28],RAX
+LAB_00401439:
+MOV RAX,qword ptr [RBP + -0x30]
+MOV EAX,dword ptr [RAX + 0x8]
+CMP EAX,dword ptr [RBP + -0x3c]
+JLE LAB_00401451
+MOV RAX,qword ptr [RBP + -0x30]
+MOV qword ptr [RBP + -0x38],RAX
+LAB_00401451:
+JMP LAB_00401456
+LAB_00401456:
+MOV EDI,dword ptr [RBP + -0x3c]
+MOV RSI,qword ptr [RBP + -0x28]
+MOV RDX,qword ptr [RBP + -0x38]
+CALL insert
+MOV qword ptr [RBP + -0x30],RAX
+CMP qword ptr [RBP + -0x28],0x0
+JNZ LAB_0040147d
+MOV RAX,qword ptr [RBP + -0x30]
+MOV qword ptr [RBP + -0x18],RAX
+LAB_0040147d:
+CMP qword ptr [RBP + -0x38],0x0
+JNZ LAB_00401490
+MOV RAX,qword ptr [RBP + -0x30]
+MOV qword ptr [RBP + -0x20],RAX
+LAB_00401490:
+JMP LAB_0040131e
+LAB_00401495:
+CMP qword ptr [RBP + -0x18],0x0
+JZ LAB_004014f3
+CMP qword ptr [RBP + -0x20],0x0
+JZ LAB_004014f3
+MOV RDI,0x402023
+MOV AL,0x0
+CALL printf
+MOV RDI,qword ptr [RBP + -0x18]
+MOV RSI,0x40202d
+CALL walk
+MOV RDI,0x402036
+MOV AL,0x0
+CALL printf
+MOV RDI,qword ptr [RBP + -0x20]
+MOV RSI,0x402040
+CALL walk
+LAB_004014f3:
+XOR EAX,EAX
+ADD RSP,0x40
+POP RBP
+RET
+//end of function funcC
+
+Reference Table:
+Address Data
+00402020 ?? 25h    %
+00402023 ds "Forward:\n"
+0040202d ds "smallest"
+00402036 ds "Reverse:\n"
+00402040 ds "largest"
+
+Generate just the C code for the function that produced the above x86 64-bit assembly. The C code should only represent the funcC function. The C code is idiomatic and uses functions, types, and structures from standard libraries.

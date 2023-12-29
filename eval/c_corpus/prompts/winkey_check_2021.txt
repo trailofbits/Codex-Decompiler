@@ -1,0 +1,153 @@
+x86 64-bit Assembly:
+
+default funcG(char * key):
+PUSH RBP
+MOV RBP,RSP
+SUB RSP,0x50
+MOV qword ptr [RBP + -0x10],RDI
+LEA RDI,[RBP + -0x16]
+XOR ESI,ESI
+MOV EDX,0x6
+CALL memset
+LEA RDI,[RBP + -0x1a]
+XOR ESI,ESI
+MOV EDX,0x4
+CALL memset
+LEA RDI,[RBP + -0x22]
+XOR ESI,ESI
+MOV EDX,0x8
+CALL memset
+LEA RDI,[RBP + -0x28]
+XOR ESI,ESI
+MOV EDX,0x6
+CALL memset
+MOV RDI,qword ptr [RBP + -0x10]
+LEA RDX,[RBP + -0x16]
+LEA RCX,[RBP + -0x1a]
+LEA R8,[RBP + -0x22]
+LEA R9,[RBP + -0x28]
+MOV RSI,0x402004
+MOV AL,0x0
+CALL __isoc99_sscanf
+LEA RDI,[RBP + -0x16]
+CALL strlen
+CMP RAX,0x5
+JNZ LAB_0040124d
+LEA RDI,[RBP + -0x1a]
+CALL strlen
+CMP RAX,0x3
+JNZ LAB_0040124d
+LEA RDI,[RBP + -0x22]
+CALL strlen
+CMP RAX,0x7
+JNZ LAB_0040124d
+LEA RDI,[RBP + -0x28]
+CALL strlen
+CMP RAX,0x5
+JZ LAB_00401259
+LAB_0040124d:
+MOV dword ptr [RBP + -0x4],0xffffffff
+JMP LAB_004013b0
+LAB_00401259:
+LEA RDI,[RBP + -0x16]
+MOV RSI,0x402014
+LEA RDX,[RBP + -0x2c]
+LEA RCX,[RBP + -0x30]
+MOV AL,0x0
+CALL __isoc99_sscanf
+CMP dword ptr [RBP + -0x2c],0x1
+JL LAB_0040128d
+CMP dword ptr [RBP + -0x2c],0x16e
+JLE LAB_00401299
+LAB_0040128d:
+MOV dword ptr [RBP + -0x4],0xffffffff
+JMP LAB_004013b0
+LAB_00401299:
+CMP dword ptr [RBP + -0x30],0x3
+JLE LAB_004012b9
+CMP dword ptr [RBP + -0x30],0x5f
+JGE LAB_004012b9
+MOV dword ptr [RBP + -0x4],0xffffffff
+JMP LAB_004013b0
+LAB_004012b9:
+LEA RDI,[RBP + -0x1a]
+MOV ESI,0x40201b
+CALL strcmp
+CMP EAX,0x0
+JZ LAB_004012dc
+MOV dword ptr [RBP + -0x4],0xffffffff
+JMP LAB_004013b0
+LAB_004012dc:
+MOVSX EDI,byte ptr [RBP + -0x22]
+CALL ctoi
+CMP EAX,0x0
+JNZ LAB_00401312
+MOVSX EDI,byte ptr [RBP + -0x1b]
+CALL ctoi
+CMP EAX,0x0
+JZ LAB_00401312
+MOVSX EDI,byte ptr [RBP + -0x1b]
+CALL ctoi
+CMP EAX,0x8
+JLE LAB_0040131e
+LAB_00401312:
+MOV dword ptr [RBP + -0x4],0xffffffff
+JMP LAB_004013b0
+LAB_0040131e:
+MOVSX EDI,byte ptr [RBP + -0x21]
+CALL ctoi
+MOV dword ptr [RBP + -0x48],EAX
+MOVSX EDI,byte ptr [RBP + -0x20]
+CALL ctoi
+MOV ECX,EAX
+MOV EAX,dword ptr [RBP + -0x48]
+ADD EAX,ECX
+MOV dword ptr [RBP + -0x44],EAX
+MOVSX EDI,byte ptr [RBP + -0x1f]
+CALL ctoi
+MOV ECX,EAX
+MOV EAX,dword ptr [RBP + -0x44]
+ADD EAX,ECX
+MOV dword ptr [RBP + -0x40],EAX
+MOVSX EDI,byte ptr [RBP + -0x1e]
+CALL ctoi
+MOV ECX,EAX
+MOV EAX,dword ptr [RBP + -0x40]
+ADD EAX,ECX
+MOV dword ptr [RBP + -0x3c],EAX
+MOVSX EDI,byte ptr [RBP + -0x1d]
+CALL ctoi
+MOV ECX,EAX
+MOV EAX,dword ptr [RBP + -0x3c]
+ADD EAX,ECX
+MOV dword ptr [RBP + -0x38],EAX
+MOVSX EDI,byte ptr [RBP + -0x1c]
+CALL ctoi
+MOV ECX,EAX
+MOV EAX,dword ptr [RBP + -0x38]
+ADD EAX,ECX
+MOV dword ptr [RBP + -0x34],EAX
+MOV EAX,dword ptr [RBP + -0x34]
+MOV ECX,0x7
+CDQ
+IDIV ECX
+CMP EDX,0x0
+JZ LAB_004013a9
+MOV dword ptr [RBP + -0x4],0xffffffff
+JMP LAB_004013b0
+LAB_004013a9:
+MOV dword ptr [RBP + -0x4],0x0
+LAB_004013b0:
+MOV EAX,dword ptr [RBP + -0x4]
+ADD RSP,0x50
+POP RBP
+RET
+//end of function funcG
+
+Reference Table:
+Address Data
+00402004 ds "%5c-%3c-%7c-%5c"
+00402014 ds "%3d%2d"
+0040201b ?? 4Fh    O
+
+Generate just the C code for the function that produced the above x86 64-bit assembly. The C code should only represent the funcG function. The C code is idiomatic and uses functions, types, and structures from standard libraries.
