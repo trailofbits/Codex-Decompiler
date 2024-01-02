@@ -5,6 +5,12 @@ from tree_sitter_languages import get_language, get_parser
 import os
 import re
 import argparse
+import torch
+from unixcoder import UniXcoder
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = UniXcoder("microsoft/unixcoder-base-nine")
+model.to(device)
 
 accuracy_results = []
 verbose = False
@@ -414,7 +420,7 @@ def generate_llm_response(prompt):
 
     return output
 
-def run_eval(prompt_file, source_file, language):
+def run_eval(prompt_file, source_file, language, mode):
     eval_func = eval_funcs.get(language)
 
     f = open(prompt_file, "r")
@@ -429,18 +435,38 @@ def run_eval(prompt_file, source_file, language):
     response = generate_llm_response(prompt)
     if verbose:
         print(response)
-    
-    (original_branches, original_calls) = eval_func(source)
-    (new_branches, new_calls) = eval_func(response)
-    total = original_branches + original_calls
-    branches_diff = abs(new_branches - original_branches)
-    calls_diff = abs(new_calls - original_calls)
-    weighted_error = (branches_diff / original_branches) * (original_branches / total) + (calls_diff / original_calls) * (original_calls / total)
-    
-    if verbose:
-        print(f"Error between decompilation and source: {weighted_error}")
-    
-    accuracy_results.append(1 - weighted_error)
+
+    if mode == 0:
+        (original_branches, original_calls) = eval_func(source)
+        (new_branches, new_calls) = eval_func(response)
+        total = original_branches + original_calls
+        branches_diff = abs(new_branches - original_branches)
+        calls_diff = abs(new_calls - original_calls)
+        weighted_error = (branches_diff / original_branches) * (original_branches / total) + (calls_diff / original_calls) * (original_calls / total)
+        
+        if verbose:
+            print(f"Error between decompilation and source: {weighted_error}")
+        
+        accuracy_results.append(1 - weighted_error)
+    else:
+        tokens_ids = model.tokenize([source],max_length=1023,mode="<encoder-only>")
+        source_ids = torch.tensor(tokens_ids).to(device)
+        tokens_embeddings,source_embedding = model(source_ids)
+
+        tokens_ids = model.tokenize([response],max_length=1023,mode="<encoder-only>")
+        source_ids = torch.tensor(tokens_ids).to(device)
+        tokens_embeddings,response_embedding = model(source_ids)
+
+        norm_source_embedding = torch.nn.functional.normalize(source_embedding, p=2, dim=1)
+        norm_response_embedding = torch.nn.functional.normalize(response_embedding, p=2, dim=1)
+
+        similarity = torch.einsum("ac,bc->ab",norm_source_embedding,norm_response_embedding).item()
+        
+        if verbose:
+            print(f"Code similarity between decompilation and source: {similarity}")
+        
+        accuracy_results.append(similarity)
+
 
 eval_funcs = {"c": eval_c, "cpp": eval_cpp, "rust": eval_rust, "go": eval_go}
 
@@ -450,38 +476,42 @@ def main():
                     description='This program benchmarks how well an LLM can decompile assembly code back to the source language.')
     parser.add_argument('-p', '--prompts', type=str, required=True, help="Specify the directory to benchmark prompts.")
     parser.add_argument('-s', '--source', type=str, required=True, help='Specify the directory to source files.')
-    parser.add_argument('-l', '--language', type=str, required=True, help='Specify the language (C, CPP, Rust, Go) of source files.') 
+    parser.add_argument('-l', '--language', type=str, required=True, help='Specify the language (C, CPP, Rust, Go) of source files.')
+    parser.add_argument('-m','--mode',type=int, required=True, help="Specify mode for determining accuracy (0: AST parsing) and (1: Code Similarity)") 
     parser.add_argument('-v', '--verbose', default=False, action='store_true')
     args = parser.parse_args()
 
-    prompt_path = args.prompts
-    source_path = args.source
-    global verbose
-    verbose = args.verbose
-    language = args.language.lower()
+    if args.mode == 0 or (args.mode == 1 and args.language.lower() != "rust"):
+        prompt_path = args.prompts
+        source_path = args.source
+        global verbose
+        verbose = args.verbose
+        language = args.language.lower()
 
-    if language in eval_funcs:
-        if os.path.exists(prompt_path) and os.path.exists(source_path):
-            prompt_arr = os.listdir(prompt_path)
-            source_arr = os.listdir(source_path)
-            for file in prompt_arr:
-                name = os.path.splitext(file)[0]
-                source_file = None
-                for element in source_arr:
-                    if element.startswith(name):
-                        source_file = element
-                        break
-                if source_file:
-                    run_eval(os.path.join(prompt_path, file), os.path.join(source_path, source_file), language)
-                    if verbose:
-                        print("\n")
-                else:
-                    print("Skipping prompt because source file could not be found!")
-            print(f"Total accuracy for llm: {sum(accuracy_results) / len(accuracy_results)}")
+        if language in eval_funcs:
+            if os.path.exists(prompt_path) and os.path.exists(source_path):
+                prompt_arr = os.listdir(prompt_path)
+                source_arr = os.listdir(source_path)
+                for file in prompt_arr:
+                    name = os.path.splitext(file)[0]
+                    source_file = None
+                    for element in source_arr:
+                        if element.startswith(name):
+                            source_file = element
+                            break
+                    if source_file:
+                        run_eval(os.path.join(prompt_path, file), os.path.join(source_path, source_file), language, args.mode)
+                        if verbose:
+                            print("\n")
+                    else:
+                        print("Skipping prompt because source file could not be found!")
+                print(f"Total accuracy for llm: {sum(accuracy_results) / len(accuracy_results)}")
+            else:
+                print("Invalid paths to files.")
         else:
-            print("Invalid paths to files.")
+            print("Invalid specified language.")
     else:
-        print("Invalid specified language.")
+        print("Invalid mode entered.")
 
 if __name__ == "__main__":
     main()
