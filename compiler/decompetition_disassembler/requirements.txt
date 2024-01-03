@@ -1,0 +1,5 @@
+capstone
+diff_match_patch
+intervaltree
+pyelftools
+pyyaml
