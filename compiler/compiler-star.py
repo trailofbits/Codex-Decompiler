@@ -66,7 +66,7 @@ def objdump(binary_path, func_name):
         pattern = re.compile(rf"<{func_name}>:\n([^\n]+\n)*")
         match = re.search(pattern, output)
         if match:
-            return match.group()
+            return re.sub(r'((-?(0x)?)[\dabcdef]+\(.*?\))|(\<(.+)[^\n]?(\+|\-)[^\n]?((0x)?[\dabcdef]+)\>)', '<offset(?)>', match.group())
         else:
             print("Function not found in objdump output.")
             quit()
@@ -212,12 +212,13 @@ def main():
                     diff = False
                     
                     for diff in functions[args.func]['hunks']:
+                        line = diff[1].lstrip()
                         if diff[0] == -1:
-                            diff_disasm += f"-\t{diff[1]}\n"
+                            diff_disasm += f"- {line}\n"
                         elif diff[0] == 0:
-                            diff_disasm += f"\t{diff[1]}\n"
+                            diff_disasm += f"  {line}\n"
                         else:
-                            diff_disasm += f"+\t{diff[1]}\n"
+                            diff_disasm += f"+ {line}\n"
 
                     if not diff:
                         print("No difference in disassembly detected!")
