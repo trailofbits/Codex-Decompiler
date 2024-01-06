@@ -71,6 +71,26 @@ def objdump(binary_path, func_name):
             print("Function not found in objdump output.")
             quit()
 
+def get_ghidra_pseudo(headless_path, proj_folder, binary_path, output_path, func_name):
+    os.environ["PSEUDOCODE_OUTPUT_PATH"] = output_path
+    os.environ['FUNC_NAME'] = func_name
+    command = f"{headless_path} {proj_folder} test -deleteProject -overwrite -import {binary_path} -postscript {os.path.join(os.getcwd(), 'pseudoexport.py')}"
+    exit_code, output, error = run_command(command)
+
+    output_file = os.path.join(output_path, os.path.basename(binary_path) + "_" + func_name.replace(":","_") + ".txt")
+    if exit_code != 0 or not os.path.exists(output_file):
+        print(f"Error in exporting pseudocode {binary_path}!")
+        if not output.isspace():
+            print(f"Stdout:\n{output}\n")
+        if not error.isspace():
+            print(f"Stderr:\n{error}\n")
+        quit()
+    else:
+        f = open(output_file, "r")
+        output = f.read()
+        f.close()
+        return output
+
 def run_command(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output, error = process.communicate()
@@ -101,13 +121,13 @@ def generate_decomp(prompt):
 
 def write_source(output_dir, language, decomp, stub):
     if language == "go":
-        filename = os.path.join(output_dir, "temp.go")
+        filename = os.path.join(output_dir, "source.go")
     elif language == "rust":
-        filename = os.path.join(output_dir, "temp.rs")
+        filename = os.path.join(output_dir, "source.rs")
     elif language == "cpp":
-        filename = os.path.join(output_dir, "temp.cpp")
+        filename = os.path.join(output_dir, "source.cpp")
     else:
-        filename = os.path.join(output_dir, "temp.c")
+        filename = os.path.join(output_dir, "source.c")
     
     if stub and os.path.exists(stub):
         f = open(stub, "r")
@@ -126,12 +146,15 @@ def write_source(output_dir, language, decomp, stub):
 def compile_error_prompt(initial_prompt, decomp, error):
     return f"The previous decompilation resulted in a compiler error. Fix the errors and re-generate the pseudocode.\nCompiler Error:\n{error}\nPrevious Decompilation:\n{decomp}"
 
-def bindiff_prompt(bindiff_out, language, func_name):
+def bindiff_prompt(bindiff_out, language, func_name, decomp):
     bindiff_out = "\n".join(bindiff_out.split("\n")[1:-1])
-    return f"The previous decompilation was able to be compiled. Here is the bindiff output between the original binary and the decompiled code binary.\n{bindiff_out}\nUsing this bindiff output, re-generate {language} pseudocode for the {func_name} function so that there is no difference. The {language} is idiomatic and uses functions, structures, and more from the standard libraries."
+    return f"The previous decompilation was able to be compiled.\nPrevious Decompilation:\n{decomp}\nHere is the bindiff output between the original binary and the decompiled code binary.\n{bindiff_out}\nUsing this bindiff output, re-generate {language} code for the {func_name} function so that there is no difference. The {language} code is idiomatic and uses functions, structures, and more from the standard libraries."
 
-def diff_prompt(diff, language, func_name):
-    return f"The previous decompilation was able to be compiled. Here is a diff between the disassembly of the original binary and the decompiled code binary:\n{diff}\nUsing this diff of the disassembly, re-generate {language} pseudocode for the {func_name} function so that there is no difference in the disassembly. The {language} is idiomatic and uses functions, structures, and more from the standard libraries."
+def diff_prompt(diff, language, func_name, decomp):
+    return f"The previous decompilation was able to be compiled.\nPrevious Decompilation:\n{decomp}\nHere is a diff between the disassembly of the original binary and the decompiled code binary:\n{diff}\nUsing this diff of the disassembly, re-generate {language} code for the {func_name} function so that there is no difference in the disassembly. The {language} code is idiomatic and uses functions, structures, and more from the standard libraries."
+
+def pseudo_diff_prompt(diff, language, func_name, decomp):
+    return f"The previous decompilation was able to be compiled.\nPrevious Decompilation:\n{decomp}\nHere is a diff between the pseudocode of the function in the original binary and the decompiled code binary:\n{diff}\nUsing this diff, re-generate {language} code for the {func_name} function so that there is no difference in the pseudocode. The {language} code is idiomatic and uses functions, structures, and more from the standard libraries."
 
 def main():
     parser = argparse.ArgumentParser(
@@ -142,7 +165,7 @@ def main():
     parser.add_argument('-o', '--output', type=str, required=True, help="Path to output directory.")
     parser.add_argument('-c', '--compiler', type=str, required=True, help='Compiler binary to compile the files.')
     parser.add_argument("-f", "--flags", required=False, help="Compiler flags.")
-    parser.add_argument("-m", "--mode", type=str, required=True, help="Feedback mode: (bindiff/disdiff/objdump)")
+    parser.add_argument("-m", "--mode", type=str, required=True, help="Feedback mode: (bindiff/disdiff/objdump/ghidra)")
     parser.add_argument("-i", "--iterations", type=int, default=5, required=False, help="Number of iterations in chain of thought.")
     parser.add_argument('-k', '--headless', type=str, required=False, help="Path to Ghidra headless binary (analyzeHeadless).")
     parser.add_argument('-s', '--proj', type=str, required=False, help="Path to Ghidra project directory.")
@@ -155,7 +178,7 @@ def main():
     language = args.language.lower()
 
     if os.path.exists(args.prompt) and os.path.exists(args.binary) and os.path.exists(args.output):
-        if mode == "bindiff" and not (os.path.exists(args.headless) and os.path.exists(args.proj)):
+        if (mode == "bindiff" or mode == "ghidra") and not (os.path.exists(args.headless) and os.path.exists(args.proj)):
             print("Invalid path to Ghidra headless, project folder, or bindiff.")
             quit()
 
@@ -170,6 +193,8 @@ def main():
             if args.func not in initial_disasm:
                 print(f"Function {args.func} was not identfied in initial binary.")
                 quit()
+        elif mode == "ghidra":
+            initial_pseudo = get_ghidra_pseudo(args.headless, args.proj, args.binary, args.output, args.func)
         else:
             print("Invalid mode!")
             quit()
@@ -186,17 +211,18 @@ def main():
             print(decomp_code)
             print("\n")
             source_file = write_source(args.output, language, decomp_code, args.stub)
-            exit_code, output, error = compile(args.compiler, os.path.join(args.output, filename + "_" + str(iter_count) + ".out"), source_file, args.flags)
+            new_binary_path = os.path.join(args.output, filename + "_" + str(iter_count) + ".out")
+            exit_code, output, error = compile(args.compiler, new_binary_path, source_file, args.flags)
             
             if exit_code != 0:
                 prompt = compile_error_prompt(initial_prompt, decomp_code, error)
             else:
                 if mode == "bindiff":
-                    binexport(args.headless, args.proj, os.path.join(args.output, filename + "_" + str(iter_count) + ".out"), args.output)
+                    binexport(args.headless, args.proj, new_binary_path, args.output)
                     bindiff_out = bindiff(initial_diff_path, os.path.join(args.output, filename + "_" + str(iter_count) + ".out.BinExport"), args.output)
-                    prompt = bindiff_prompt(bindiff_out, language, args.func)
+                    prompt = bindiff_prompt(bindiff_out, language, args.func, decomp_code)
                 elif mode == "objdump":
-                    curr_objdump = objdump(os.path.join(args.output, filename + "_" + str(iter_count) + ".out"), args.func)
+                    curr_objdump = objdump(new_binary_path, args.func)
                     diff = list(differ.compare(initial_objdump.splitlines(), curr_objdump.splitlines()))
                     
                     if not any(line.startswith(('+', '-', '?')) for line in diff):
@@ -204,9 +230,9 @@ def main():
                         print(f"Final decompilation:\n{decomp_code}")
                         quit()
                     else:
-                        prompt = diff_prompt('\n'.join(diff), language, args.func)
+                        prompt = diff_prompt('\n'.join(diff), language, args.func, decomp_code)
                 elif mode == "disdiff":
-                    curr_disasm = get_disasm(os.path.join(args.output, filename + "_" + str(iter_count) + ".out"), language, args.func)
+                    curr_disasm = get_disasm(new_binary_path, language, args.func)
                     functions, _ = diff_all(curr_disasm, initial_disasm)
                     diff_disasm = ""
                     diff = False
@@ -225,9 +251,20 @@ def main():
                         print(f"Final decompilation:\n{decomp_code}")
                         quit()
                     else:
-                        prompt = diff_prompt(diff_disasm, language, args.func)
+                        prompt = diff_prompt(diff_disasm, language, args.func, decomp_code)
+                elif mode == "ghidra":
+                    curr_pseudo = get_ghidra_pseudo(args.headless, args.proj, new_binary_path, args.output, args.func)
+                    diff = list(differ.compare(initial_pseudo.splitlines(), curr_pseudo.splitlines()))
+                    
+                    if not any(line.startswith(('+', '-', '?')) for line in diff):
+                        print("No difference in pseudocode detected!")
+                        print(f"Final decompilation:\n{decomp_code}")
+                        quit()
+                    else:
+                        prompt = pseudo_diff_prompt('\n'.join(diff), language, args.func, decomp_code)
                 else:
                     print("Invalid mode!")
+                    quit()
     else:
         print("Invalid source, prompt, or output path.")
 
