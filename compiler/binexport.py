@@ -1,3 +1,4 @@
+#This ghidra headless script allows you to get the binexport of the current program
 from com.google.security.binexport import BinExportExporter
 from java.io import File
 import os
