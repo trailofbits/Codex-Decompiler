@@ -6,9 +6,7 @@ import difflib
 from langchain.chat_models import AzureChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 from decompetition_disassembler.bindings import get_disasm, diff_all
-from dotenv import load_dotenv
 
-load_dotenv()
 differ = difflib.Differ()
 
 def compile(compiler, output_name, source_file, flags):
@@ -223,7 +221,7 @@ def main():
                     prompt = bindiff_prompt(bindiff_out, language, args.func, decomp_code)
                 elif mode == "objdump":
                     curr_objdump = objdump(new_binary_path, args.func)
-                    diff = list(differ.compare(initial_objdump.splitlines(), curr_objdump.splitlines()))
+                    diff = list(differ.compare(curr_objdump.splitlines(), initial_objdump.splitlines()))
                     
                     if not any(line.startswith(('+', '-', '?')) for line in diff):
                         print("No difference in disassembly detected!")
@@ -254,7 +252,7 @@ def main():
                         prompt = diff_prompt(diff_disasm, language, args.func, decomp_code)
                 elif mode == "ghidra":
                     curr_pseudo = get_ghidra_pseudo(args.headless, args.proj, new_binary_path, args.output, args.func)
-                    diff = list(differ.compare(initial_pseudo.splitlines(), curr_pseudo.splitlines()))
+                    diff = list(differ.compare(curr_pseudo.splitlines(), initial_pseudo.splitlines()))
                     
                     if not any(line.startswith(('+', '-', '?')) for line in diff):
                         print("No difference in pseudocode detected!")
