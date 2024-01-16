@@ -16,15 +16,13 @@ accuracy_results = []
 verbose = False
 
 def clean_output(text):
-    pattern = re.compile(r"(''')|(```)")
+    pattern = re.compile(r"('''|```)\S+\n([\s\S]*?)('''|```)")
 
-    lines = text.split('\n')
-
-    filtered_lines = [line for line in lines if not re.search(pattern, line)]
-
-    result_string = '\n'.join(filtered_lines)
-
-    return result_string
+    match = re.search(pattern, text)
+    if match:
+        return match.group(2)
+    else:
+        return text
 
 def eval_c(code):
     language = get_language('c')
