@@ -1,3 +1,4 @@
+# This script extracts all the unique type names of an AST from a json file (node-types.json) of the tree-sitter library.
 import json
 
 def extract_unique_types(filename):
