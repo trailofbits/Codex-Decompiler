@@ -1,4 +1,4 @@
-# cpp_corpus folder
+# go_corpus folder
 This folder contains many example Go programs which are used in the current decompilation dataset.  
 There are four data sources in the current folder.
 ## Sources
