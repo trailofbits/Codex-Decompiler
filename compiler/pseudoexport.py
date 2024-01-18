@@ -1,4 +1,4 @@
-#This ghidra headless script allows you to export the ghidra pseudocode of a function
+# This ghidra headless script allows you to export the ghidra pseudocode of a function
 from ghidra.program.model.symbol import SymbolType
 from ghidra.app.decompiler import DecompInterface
 import os
