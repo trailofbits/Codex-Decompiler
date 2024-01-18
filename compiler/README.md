@@ -37,6 +37,7 @@ options:
   -l LANGUAGE, --language LANGUAGE
                         Language of initial binary file (C, CPP, Go, Rust).
 ```
+This file also has a function named generate_llm_response which can be easily modified to work with any LLM. Currently, it uses GPT-4.
 ## binexport.py
 This file is a ghidra headless script that allows you to export the BinExport file for any given binary. It is used in bindiff mode in the main tool.
 ## pseudoexport.py
