@@ -3,14 +3,20 @@ import argparse
 import subprocess
 import re
 import difflib
+import torch
 from langchain.chat_models import AzureChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 from decompetition_disassembler.bindings import get_disasm, diff_all
 from tree_sitter import Language, Parser
 from tree_sitter_languages import get_language, get_parser
 from collections import Counter
+from unixcoder import UniXcoder
 
 differ = difflib.Differ()
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = UniXcoder("microsoft/unixcoder-base-nine")
+model.to(device)
 
 def compile(compiler, output_name, source_file, flags):
     if flags:
@@ -326,7 +332,178 @@ def eval_cpp(code):
 
     return (branches, function_calls)
 
-eval_funcs = {"c": eval_c, "cpp": eval_cpp, "rust": eval_cpp, "go": eval_cpp}
+def eval_rust(code):
+    language = get_language('rust')
+    parser = get_parser('rust')
+
+    tree = parser.parse(bytes(code, "utf8"))
+
+    function_calls = []
+    branches = 0
+
+    def eval_exp(node):
+        if node.type == "binary_expression":
+           left_node = node.child_by_field_name("left")
+           operator = node.child_by_field_name("operator")
+           right_node = node.child_by_field_name("right")
+           (count, output) = eval_exp(left_node)
+           (count2, output2) = eval_exp(right_node)
+           if operator.type == "||" or operator.type == "&&":
+               return (1 + count + count2, True)
+           else:
+               return (count + count2, True)
+        elif node.type == "parenthesized_expression" or node.type == "let_chain":
+            return eval_exp(node.child(0))
+        elif node.type == "let_condition" or node.type == "for_expression":
+            return eval_exp(node.child_by_field_name("value"))
+        elif node.type == "if_expresion" or node.type == "while_expression" or node.type == "match_pattern":
+            return eval_exp(node.child_by_field_name("condition"))
+        else:
+            return (0, False)
+
+
+    def traverse_tree(tree):
+        cursor = tree.walk()
+
+        reached_root = False
+        while reached_root == False:
+            nonlocal branches
+            nonlocal function_calls
+            if cursor.node.type == "call_expression":
+                function_node = cursor.node.child_by_field_name('function')
+                if function_node is not None:
+                    function_calls.append(function_node.text.decode('utf8'))
+            elif cursor.node.type in {"for_expression", "if_expression", "while_expression", "match_pattern"}:
+                if cursor.node.type == "match_pattern":
+                    condition_node = cursor.node.child_by_field_name('condition')
+                    if condition_node:
+                        (eval_count, binary_bool) = eval_exp(condition_node)
+                        if eval_count == 0:
+                            if binary_bool or "literal" not in condition_node.type:
+                                branches += 1
+                        else:
+                            branches += (eval_count + 1)
+                    else:
+                        branches += 1
+                else:
+                    if cursor.node.type == "for_expression":
+                        condition_node = cursor.node.child_by_field_name("value")
+                    else:
+                        condition_node = cursor.node.child_by_field_name('condition')
+                    
+                    (eval_count, binary_bool) = eval_exp(condition_node)
+                    if eval_count == 0:
+                        if binary_bool or "literal" not in condition_node.type:
+                            branches += 1
+                    else:
+                        branches += (eval_count + 1)
+
+            if cursor.goto_first_child():
+                continue
+
+            if cursor.goto_next_sibling():
+                continue
+
+            retracing = True
+            while retracing:
+                if not cursor.goto_parent():
+                    retracing = False
+                    reached_root = True
+
+                if cursor.goto_next_sibling():
+                    retracing = False
+
+    traverse_tree(tree)
+
+    return (branches, function_calls)
+
+def eval_go(code):
+    language = get_language('go')
+    parser = get_parser('go')
+
+    tree = parser.parse(bytes(code, "utf8"))
+
+    function_calls = []
+    branches = 0
+
+    def eval_exp(node):
+        if node.type == "binary_expression":
+           left_node = node.child_by_field_name("left")
+           operator = node.child_by_field_name("operator")
+           right_node = node.child_by_field_name("right")
+           (count, output) = eval_exp(left_node)
+           (count2, output2) = eval_exp(right_node)
+           if operator.type == "||" or operator.type == "&&":
+               return (1 + count + count2, True)
+           else:
+               return (count + count2, True)
+        elif node.type == "parenthesized_expression":
+            return eval_exp(node.child(0))
+        else:
+            return (0, False)
+
+
+    def traverse_tree(tree):
+        cursor = tree.walk()
+
+        reached_root = False
+        while reached_root == False:
+            nonlocal branches
+            nonlocal function_calls
+            if cursor.node.type == "call_expression":
+                function_node = cursor.node.child_by_field_name('function')
+                if function_node is not None:
+                    function_calls.append(function_node.text.decode('utf8'))
+            elif cursor.node.type == "for_statement":
+                condition_node = None
+                for child in cursor.node.children:
+                    if child.type == "for_clause":
+                        condition_node = child.child_by_field_name("condition")
+                        break
+                    elif child.type == "range_clause":
+                        branches += 1
+                        break
+                    elif "expression" in child.type:
+                        condition_node = child
+                        break
+                if condition_node:
+                    (eval_count, binary_bool) = eval_exp(condition_node)
+                    if eval_count == 0:
+                        if binary_bool or "literal" not in child.type:
+                            branches += 1
+                    else:
+                        branches += (eval_count + 1)
+            elif cursor.node.type == "if_statement":
+                condition_node = cursor.node.child_by_field_name("condition")
+                (eval_count, binary_bool) = eval_exp(condition_node)
+                if eval_count == 0:
+                    if binary_bool or "literal" not in condition_node.type:
+                        branches += 1
+                else:
+                    branches += (eval_count + 1)
+            elif cursor.node.type == "expression_case":
+                branches += 1
+
+            if cursor.goto_first_child():
+                continue
+
+            if cursor.goto_next_sibling():
+                continue
+
+            retracing = True
+            while retracing:
+                if not cursor.goto_parent():
+                    retracing = False
+                    reached_root = True
+
+                if cursor.goto_next_sibling():
+                    retracing = False
+
+    traverse_tree(tree)
+
+    return (branches, function_calls)
+
+eval_funcs = {"c": eval_c, "cpp": eval_cpp, "rust": eval_rust, "go": eval_go}
 
 def compile_error_prompt(initial_prompt, decomp, error):
     return f"The previous decompilation resulted in a compiler error. Fix the errors and re-generate the pseudocode.\nCompiler Error:\n{error}\nPrevious Decompilation:\n{decomp}"
@@ -357,6 +534,37 @@ def eval_diff_prompt(language, func_name, decomp, initial_pseudo, diff_branches,
 
     return output
 
+def run_eval(source, response, language, mode):
+    if mode == 0:
+        eval_func = eval_funcs.get(language)
+        (original_branches, original_calls) = eval_func(source)
+        (new_branches, new_calls) = eval_func(response)
+        total = original_branches + original_calls
+        branches_diff = abs(new_branches - original_branches)
+        calls_diff = abs(new_calls - original_calls)
+        weighted_error = (branches_diff / original_branches) * (original_branches / total) + (calls_diff / original_calls) * (original_calls / total)
+
+        print(f"Error between decompilation and source: {weighted_error}")
+        
+        return weighted_error
+    else:
+        tokens_ids = model.tokenize([source],max_length=1023,mode="<encoder-only>")
+        source_ids = torch.tensor(tokens_ids).to(device)
+        tokens_embeddings,source_embedding = model(source_ids)
+
+        tokens_ids = model.tokenize([response],max_length=1023,mode="<encoder-only>")
+        source_ids = torch.tensor(tokens_ids).to(device)
+        tokens_embeddings,response_embedding = model(source_ids)
+
+        norm_source_embedding = torch.nn.functional.normalize(source_embedding, p=2, dim=1)
+        norm_response_embedding = torch.nn.functional.normalize(response_embedding, p=2, dim=1)
+
+        similarity = torch.einsum("ac,bc->ab",norm_source_embedding,norm_response_embedding).item()
+        
+        print(f"Code similarity between decompilation and source: {similarity}")
+        
+        return similarity
+
 def main():
     parser = argparse.ArgumentParser(
                 prog='Compiler Augmented LLM Decompilation',
@@ -373,6 +581,8 @@ def main():
     parser.add_argument('-q', '--stub', type=str, required=False, help="Path to stub source file used in compiling.")
     parser.add_argument('-u', '--func', type=str, required=True, help="Name of the function to be decompiled.")
     parser.add_argument('-l', '--language', type=str, required=True, help='Language of initial binary file (C, CPP, Go, Rust).')
+    parser.add_argument('-z', '--accuracy_mode', type=int, default=None, required=False, help='Mode of Accuracy Measurement (0: AST parsing) (1: Code Similarity)')
+    parser.add_argument('-a', '--source_file', type=str, required=False, help='Path to source file used for accuracy measurements.')
     args = parser.parse_args()
 
     mode = args.mode.lower()
@@ -382,6 +592,18 @@ def main():
         if (mode == "bindiff" or mode == "ghidra") and not (os.path.exists(args.headless) and os.path.exists(args.proj)):
             print("Invalid path to Ghidra headless, project folder, or bindiff.")
             quit()
+
+        if args.accuracy_mode:
+            print(args.accuracy_mode)
+            if args.accuracy_mode == 1 and args.language == "rust":
+                print("Rust language cannot be used with code similarity measurement.")
+                quit()
+            elif args.accuracy_mode not in {0, 1}:
+                print("Invalid accuracy mode!")
+                quit()
+            elif not os.path.exists(args.source_file):
+                print("Invalid path to source file for accuracy measurements!")
+                quit() 
 
         filename = os.path.splitext(os.path.split(args.binary)[1])[0]
         if mode == "bindiff":
@@ -404,13 +626,24 @@ def main():
         initial_prompt = f.read()
         f.close()
 
+        f = open(args.source_file, "r")
+        source = f.read()
+        f.close()
+
         prompt = initial_prompt
+        accuracy = 0
+        best_decomp = None
 
         for iter_count in range(args.iterations):
             print(f'{iter_count}\n{prompt}\n')
             decomp_code = generate_decomp(prompt)
             print(decomp_code)
             print("\n")
+            curr_accuracy = run_eval(source, decomp_code, language, args.accuracy_mode)
+            if curr_accuracy > accuracy:
+                accuracy = curr_accuracy
+                best_decomp = decomp_code
+
             source_file = write_source(args.output, language, decomp_code, args.stub)
             new_binary_path = os.path.join(args.output, filename + "_" + str(iter_count) + ".out")
             exit_code, output, error = compile(args.compiler, new_binary_path, source_file, args.flags)
@@ -465,8 +698,13 @@ def main():
                         prompt = pseudo_diff_prompt('\n'.join(diff), language, args.func, decomp_code)
                 elif mode == "ghidra_eval":
                     curr_pseudo = get_ghidra_pseudo(args.headless, args.proj, new_binary_path, args.output, args.func)
-                    initial_branches, initial_calls = eval_funcs[language](initial_pseudo)
-                    curr_branches, curr_calls = eval_funcs[language](curr_pseudo)
+                    if language == "go" or language == "rust":
+                        # Ghidra pseudocode is C/C++ style so eval using C++
+                        initial_branches, initial_calls = eval_funcs['cpp'](initial_pseudo)
+                        curr_branches, curr_calls = eval_funcs['cpp'](curr_pseudo)
+                    else:
+                        initial_branches, initial_calls = eval_funcs[language](initial_pseudo)
+                        curr_branches, curr_calls = eval_funcs[language](curr_pseudo)
                     initial_calls, curr_calls = Counter(initial_calls), Counter(curr_calls)
                     if curr_branches == initial_branches and initial_calls == curr_calls:
                         print("No difference in pseudocode detected!")
@@ -488,6 +726,8 @@ def main():
                 else:
                     print("Invalid mode!")
                     quit()
+        print(f"Best Decompilation:\n{best_decomp}")
+        print(f"Accuracy of Best Decompilation:\n{accuracy}")
     else:
         print("Invalid source, prompt, or output path.")
 
