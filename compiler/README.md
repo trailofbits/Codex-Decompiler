@@ -47,5 +47,5 @@ This folder is a clone of the [Disassembler Differ](https://github.com/decompeti
 
 ## Demos
 Here are the links to couple demos showing the tool in action.  
-[Demo Showing LLM Fixing Compiler Errors](https://docs.google.com/document/d/1lhIyoSQPfszOk8CX71iu_sFIPi_Do3l4ftu8HGLRNJM/edit#heading=h.ouhr3emxe413)  
+[Demo Showing LLM Fixing Compiler Errors](https://drive.google.com/file/d/1nqabvyky-_deZMT28ArDqjxYYw1U2d4Q/view?usp=sharing)  
 [Demo Showing LLM Improving Decompilation](https://drive.google.com/file/d/1OhZh4RzZXkRNrxouDxtXqqe_EIHjfwYz/view?usp=sharing)  
