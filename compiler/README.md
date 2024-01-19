@@ -9,8 +9,8 @@ python3 compiler-star.py -p ./baby_cpp_main_2021.txt -b ../cpp.out -c clang++ -m
 This example command is running the tool on the baby_cpp_main_2021 prompt and binary from the eval folder. It is also using the ghidra feedback mode.
 The full list and description of all the command line arguments of this tool is given below:
 ```bash
-usage: Compiler Augmented LLM Decompilation [-h] -p PROMPT -b BINARY -o OUTPUT -c COMPILER [-f FLAGS] -m MODE [-i ITERATIONS] [-k HEADLESS] [-s PROJ]
-                                            [-q STUB] -u FUNC -l LANGUAGE
+usage: Compiler Augmented LLM Decompilation [-h] -p PROMPT -b BINARY -o OUTPUT -c COMPILER [-f FLAGS] -m MODE [-i ITERATIONS] [-k HEADLESS]
+                                            [-s PROJ] [-q STUB] -u FUNC -l LANGUAGE [-z ACCURACY_MODE] [-a SOURCE_FILE]
 
 This program uses chain of thought reasoning with LLMs and feedback from the compiler to improve decompilation results.
 
@@ -36,6 +36,10 @@ options:
   -u FUNC, --func FUNC  Name of the function to be decompiled.
   -l LANGUAGE, --language LANGUAGE
                         Language of initial binary file (C, CPP, Go, Rust).
+  -z ACCURACY_MODE, --accuracy_mode ACCURACY_MODE
+                        Mode of Accuracy Measurement (0: AST parsing) (1: Code Similarity)
+  -a SOURCE_FILE, --source_file SOURCE_FILE
+                        Path to source file used for accuracy measurements.
 ```
 This file also has a function named generate_llm_response which can be easily modified to work with any LLM. Currently, it uses GPT-4.
 ## binexport.py
